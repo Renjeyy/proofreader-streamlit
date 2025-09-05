@@ -12,7 +12,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("Proofreader Bahasa Indonesia (KBBI & PUEBI)")
+st.title("Website Proofreader COE Divisi SKAI IFG")
 st.caption("Unggah dokumen (PDF/DOCX) untuk mendeteksi kesalahan ketik, ejaan, dan tata bahasa.")
 
 # --- Konfigurasi API Key (LEBIH AMAN) ---
@@ -78,6 +78,9 @@ def proofread_with_gemini(text_to_check):
     7. Khusus "Indonesia Financial Group (IFG)", meskipun bahasa inggris, tidak perlu di italic
     8. Bila ada bahasa yang lebih bagus, tolong berikan saran dan diberi warna highlight yang berbeda selain kuning
     9. Pada bagian penutup, yang mulai dari "Jakarta, 4 September 2025" hingga "Kepala Divisi Satuan Kerja Audit Internal", tidak perlu dicek
+    10. Pada bagian nomor surat, itu juga tidak perlu di cek
+    11. Kalau ada kata-kata yang tidak sesuai KBBI dan PUEBI, tolong jangan highlight semua kalimatnya, tapi cukup highlight kata-kata yang salah serta perbaiki kata-kata itu aja, jangan perbaiki semua kalimatnya
+    12. Ketika Anda perbaiki, fontnya pastikan Arial dengan ukuran 11 juga
 
 
     PENTING: Berikan hasil dalam format yang ketat. Untuk setiap kesalahan, gunakan format:
@@ -198,4 +201,5 @@ if uploaded_file is not None:
                                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                                 use_container_width=True
                             )
+
 
