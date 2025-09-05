@@ -87,6 +87,8 @@ def proofread_with_gemini(text_to_check):
     10. Pada bagian nomor surat, itu juga tidak perlu di cek
     11. Kalau ada kata-kata yang tidak sesuai KBBI dan PUEBI, tolong jangan highlight semua kalimatnya, tapi cukup highlight kata-kata yang salah serta perbaiki kata-kata itu aja, jangan perbaiki semua kalimatnya
     12. Ketika Anda perbaiki, fontnya pastikan Arial dengan ukuran 11 juga
+    13. Jika pada  "Indonesia Financial Group" tertulis "Financial", tolong perbaiki menjadi "Financial" dan jangan italic
+    14. Pastikan yang benar adalah "Satuan Kerja Audit Internal"
 
     PENTING: Berikan hasil dalam format yang SANGAT KETAT. Untuk setiap kesalahan, gunakan format:
     [SALAH] kata atau frasa yang salah -> [BENAR] kata atau frasa perbaikan -> [KALIMAT] kalimat lengkap asli tempat kesalahan ditemukan
@@ -219,3 +221,4 @@ if uploaded_file is not None:
                                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                                 use_container_width=True
                             )
+
