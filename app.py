@@ -19,7 +19,7 @@ st.caption("Unggah dokumen (PDF/DOCX) untuk mendeteksi kesalahan ketik, ejaan, d
 
 # --- Konfigurasi API Key (LEBIH AMAN) ---
 try:
-    api_key = st.secrets["GOOGLE_API_KEY"]
+    api_key = st.secrets["AIzaSyBbaJ3hwjrsMcoAEvmC3KIfrzHD2BTbpFA"]
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-1.5-flash-latest')
 except KeyError:
@@ -228,4 +228,5 @@ if uploaded_file is not None:
                         file_name=f"laporan_proofread_{uploaded_file.name.split('.')[0]}.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         use_container_width=True
+
                     )
