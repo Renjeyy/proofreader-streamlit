@@ -233,4 +233,5 @@ if st.session_state.analysis_results is not None:
                     mime="application/zip",
                     use_container_width=True
                 )
-        st.warning("Hasilnya masih bisa salah, tolong dicek ulang lagi.", icon="⚠️")
+        st.warning("Hasilnya masih bisa salah, tolong dicek ulang lagi.")
+
