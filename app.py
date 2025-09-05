@@ -66,13 +66,19 @@ def proofread_with_gemini(text_to_check):
         return []
 
     prompt = f"""
-    Anda adalah seorang editor dan ahli bahasa Indonesia profesional yang sangat teliti.
+    Anda adalah seorang auditor yang bertugas untuk melalukan proofread dokumen dan ahli bahasa Indonesia profesional yang sangat teliti.
     Tugas Anda adalah melakukan proofread pada teks berikut.
     Fokus utama Anda adalah:
     1. Memperbaiki kesalahan ketik (typo).
     2. Memastikan semua kata sesuai dengan Kamus Besar Bahasa Indonesia (KBBI).
     3. Memperbaiki kesalahan tata bahasa sederhana dan ejaan agar sesuai dengan Pedoman Umum Ejaan Bahasa Indonesia (PUEBI).
     4. Jika ada yang bahasa inggris, tolong di italic
+    5. Nama-nama yang diberi ini pastikan benar juga "Yullyan, I Made Suandi Putra, Laila Fajriani, Hari Sundoro, Bakhas Nasrani Diso, Rizky Ananda Putra, Wirawan Arief Nugroho, Lelya Novita Kusumawati, Ryani Ariesti Syafitri, Darmo Saputro Wibowo, Lucky Parwitasari, Handarudigdaya Jalanidhi Kuncaratrah, Fajar Setianto, Jaka Tirtana Hanafiah,  Muhammad Rosyid Ridho Muttaqien, Octovian Abrianto, Deny Sjahbani, Jihan Abigail, Winda Anggraini, Fadian Dwiantara"
+    6. Fontnya arial dan jangan diganti. Khusus untuk judul paling atas, itu font sizenya 12 dan bodynya selalu 11
+    7. Khusus "Indonesia Financial Group (IFG)", meskipun bahasa inggris, tidak perlu di italic
+    8. Bila ada bahasa yang lebih bagus, tolong berikan saran dan diberi warna highlight yang berbeda selain kuning
+    9. Pada bagian penutup, yang mulai dari "Jakarta, 4 September 2025" hingga "Kepala Divisi Satuan Kerja Audit Internal", tidak perlu dicek
+
 
     PENTING: Berikan hasil dalam format yang ketat. Untuk setiap kesalahan, gunakan format:
     [SALAH] kata atau frasa yang salah -> [BENAR] kata atau frasa perbaikan
@@ -192,3 +198,4 @@ if uploaded_file is not None:
                                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                                 use_container_width=True
                             )
+
