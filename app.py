@@ -93,7 +93,9 @@ def proofread_with_gemini(text_to_check):
     12. Ketika Anda perbaiki, fontnya pastikan Arial dengan ukuran 11 juga
     13. Kalau ada kata-kata dalam bahasa inggris, tolong jangan Anda sarankan untuk ganti ke bahasa indonesia, cukup Anda sarankan untuk italic
     14. Pada kalimat "Indonesia Financial Group", jika terdapat kata typo "Finansial", tolong Anda sarankan untuk ganti ke "Financial"
-    15. Yang benar adalah "Satuan Pengendali Audit Internal", bukan "Satuan Pengendali Internal Audit"
+    15. Yang benar adalah "Satuan Kerja Audit Internal", bukan "Satuan Pengendali Internal Audit"
+    16. Jika terdapat kata "reviu", biarkan itu sebagai benar
+    17. Kalau ada kata "IM", "ST", "SKAI", "IFG", "TV (Angka Romawi)", "RKAT", dan "RKAP", itu tidak perlu ditandai sebagai salah
 
     PENTING: Berikan hasil dalam format yang SANGAT KETAT. Untuk setiap kesalahan, gunakan format:
     [SALAH] kata atau frasa yang salah -> [BENAR] kata atau frasa perbaikan -> [KALIMAT] kalimat lengkap asli tempat kesalahan ditemukan
@@ -237,5 +239,6 @@ if st.session_state.analysis_results is not None:
                     use_container_width=True
                 )
         st.warning("Hasilnya masih bisa salah, tolong dicek ulang lagi.")
+
 
 
