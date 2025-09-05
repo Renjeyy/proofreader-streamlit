@@ -97,7 +97,6 @@ def proofread_with_gemini(text_to_check):
     16. Jika terdapat kata "reviu", biarkan itu sebagai benar
     17. Kalau ada kata "IM", "ST", "SKAI", "IFG", "TV (Angka Romawi)", "RKAT", dan "RKAP", itu tidak perlu ditandai sebagai salah dan tidak perlu disarankan untuk italic / bold / underline
     18. Kalau ada kata "email", biarkan itu sebagai benar tapi disarankan italic saja
-    19. Tolong Anda pastikan juga tanda baca yang sesuai menurut PUEBI
 
     PENTING: Berikan hasil dalam format yang SANGAT KETAT. Untuk setiap kesalahan, gunakan format:
     [SALAH] kata atau frasa yang salah -> [BENAR] kata atau frasa perbaikan -> [KALIMAT] kalimat lengkap asli tempat kesalahan ditemukan
@@ -241,6 +240,7 @@ if st.session_state.analysis_results is not None:
                     use_container_width=True
                 )
         st.warning("Hasilnya masih bisa salah, tolong dicek ulang lagi.")
+
 
 
 
