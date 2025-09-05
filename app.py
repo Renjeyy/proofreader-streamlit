@@ -5,6 +5,7 @@ import fitz  # PyMuPDF
 import io
 import re
 from docx.enum.text import WD_COLOR_INDEX
+import pandas as pd # <-- Import pandas untuk st.dataframe
 
 # --- Konfigurasi Awal ---
 st.set_page_config(
@@ -12,13 +13,14 @@ st.set_page_config(
     layout="wide"
 )
 
+# --- HEADER APLIKASI ---
 try:
-    st.image("Logo_IFG-removebg-preview.png", width=250) # Sesuaikan lebar logo sesuai kebutuhan
+    # Logo diperbesar dengan mengubah width dari 150 menjadi 250
+    st.image("Logo_IFG-removebg-preview.png", width=250)
 except Exception as e:
     st.warning("Logo tidak ditemukan. Pastikan file 'logo.png' ada di direktori yang sama.")
 
-# Menggunakan HTML untuk menengahkan judul
-st.markdown("<h1 style='text-align: center;'>Website Proofreader COE Divisi SKAI IFG</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>Website Proofreader Departemen COE Divisi SKAI IFG</h1>", unsafe_allow_html=True)
 st.caption("Unggah dokumen (PDF/DOCX) untuk mendeteksi kesalahan ketik, ejaan, dan tata bahasa.")
 
 # --- Konfigurasi API Key (LEBIH AMAN) ---
@@ -36,10 +38,9 @@ except Exception as e:
 # --- FUNGSI-FUNGSI UTAMA ---
 
 def extract_text_with_pages(uploaded_file):
-    """Mengekstrak teks dari file PDF atau DOCX beserta nomor halamannya."""
+    """Mengekstrak teks dari file DOCX."""
     pages_content = []
     file_extension = uploaded_file.name.split('.')[-1].lower()
-    
     file_bytes = uploaded_file.getvalue()
 
     if file_extension == 'pdf':
@@ -51,7 +52,6 @@ def extract_text_with_pages(uploaded_file):
         except Exception as e:
             st.error(f"Gagal membaca file PDF: {e}")
             return None
-            
     elif file_extension == 'docx':
         try:
             doc = docx.Document(io.BytesIO(file_bytes))
@@ -63,7 +63,6 @@ def extract_text_with_pages(uploaded_file):
     else:
         st.error("Format file tidak didukung. Harap unggah .pdf atau .docx")
         return None
-        
     return pages_content
 
 def proofread_with_gemini(text_to_check):
@@ -71,15 +70,16 @@ def proofread_with_gemini(text_to_check):
     if not text_to_check or text_to_check.isspace():
         return []
 
+    # --- PROMPT DIMODIFIKASI ---
+    # Menambahkan instruksi untuk menyertakan kalimat asli
     prompt = f"""
-    Anda adalah seorang auditor yang bertugas untuk melalukan proofread dokumen dan ahli bahasa Indonesia profesional yang sangat teliti.
-    Tugas Anda adalah melakukan proofread pada teks berikut.
-    Fokus utama Anda adalah:
+    Anda adalah seorang auditor dan ahli bahasa Indonesia yang sangat teliti.
+    Tugas Anda adalah melakukan proofread pada teks berikut. Fokus pada:
     1. Memperbaiki kesalahan ketik (typo).
     2. Memastikan semua kata sesuai dengan Kamus Besar Bahasa Indonesia (KBBI).
     3. Memperbaiki kesalahan tata bahasa sederhana dan ejaan agar sesuai dengan Pedoman Umum Ejaan Bahasa Indonesia (PUEBI).
     4. Jika ada yang bahasa inggris, tolong di italic
-    5. Nama-nama yang diberi ini pastikan benar juga "Yullyan, I Made Suandi Putra, Laila Fajriani, Hari Sundoro, Bakhas Nasrani Diso, Rizky Ananda Putra, Wirawan Arief Nugroho, Lelya Novita Kusumawati, Ryani Ariesti Syafitri, Darmo Saputro Wibowo, Lucky Parwitasari, Handarudigdaya Jalanidhi Kuncaratrah, Fajar Setianto, Jaka Tirtana Hanafiah,  Muhammad Rosyid Ridho Muttaqien, Octovian Abrianto, Deny Sjahbani, Jihan Abigail, Winda Anggraini, Fadian Dwiantara"
+    5. Nama-nama yang diberi ini pastikan benar juga "Yullyan, I Made Suandi Putra, Laila Fajriani, Hari Sundoro, Bakhas Nasrani Diso, Rizky Ananda Putra, Wirawan Arief Nugroho, Lelya Novita Kusumawati, Ryani Ariesti Syafitri, Darmo Saputro Wibowo, Lucky Parwitasari, Handarudigdaya Jalanidhi Kuncaratrah, Fajar Setianto, Jaka Tirtana Hanafiah,  Muhammad Rosyid Ridho Muttaqien, Octovian Abrianto, Deny Sjahbani, Jihan Abigail, Winda Anggraini, Fadian Dwiantara, Aliya Anindhita Rachman"
     6. Fontnya arial dan jangan diganti. Khusus untuk judul paling atas, itu font sizenya 12 dan bodynya selalu 11
     7. Khusus "Indonesia Financial Group (IFG)", meskipun bahasa inggris, tidak perlu di italic
     8. Bila ada bahasa yang lebih bagus, tolong berikan saran dan diberi warna highlight yang berbeda selain kuning
@@ -88,9 +88,11 @@ def proofread_with_gemini(text_to_check):
     11. Kalau ada kata-kata yang tidak sesuai KBBI dan PUEBI, tolong jangan highlight semua kalimatnya, tapi cukup highlight kata-kata yang salah serta perbaiki kata-kata itu aja, jangan perbaiki semua kalimatnya
     12. Ketika Anda perbaiki, fontnya pastikan Arial dengan ukuran 11 juga
 
+    PENTING: Berikan hasil dalam format yang SANGAT KETAT. Untuk setiap kesalahan, gunakan format:
+    [SALAH] kata atau frasa yang salah -> [BENAR] kata atau frasa perbaikan -> [KALIMAT] kalimat lengkap asli tempat kesalahan ditemukan
 
-    PENTING: Berikan hasil dalam format yang ketat. Untuk setiap kesalahan, gunakan format:
-    [SALAH] kata atau frasa yang salah -> [BENAR] kata atau frasa perbaikan
+    Contoh:
+    [SALAH] dikarenakan -> [BENAR] karena -> [KALIMAT] Hal itu terjadi dikarenakan kelalaian petugas.
 
     Jika tidak ada kesalahan sama sekali, kembalikan teks: "TIDAK ADA KESALAHAN"
 
@@ -101,9 +103,14 @@ def proofread_with_gemini(text_to_check):
 
     try:
         response = model.generate_content(prompt)
-        pattern = re.compile(r"\[SALAH\]\s*(.*?)\s*->\s*\[BENAR\]\s*(.*?)\s*(\n|$)", re.IGNORECASE)
+        # --- REGEX DIMODIFIKASI ---
+        # Menambahkan grup ketiga untuk menangkap [KALIMAT]
+        pattern = re.compile(r"\[SALAH\]\s*(.*?)\s*->\s*\[BENAR\]\s*(.*?)\s*->\s*\[KALIMAT\]\s*(.*?)\s*(\n|$)", re.IGNORECASE)
         found_errors = pattern.findall(response.text)
-        return [{"salah": salah.strip(), "benar": benar.strip()} for salah, benar, _ in found_errors]
+        
+        # --- RETURN DIMODIFIKASI ---
+        # Menambahkan 'kalimat' ke dalam dictionary
+        return [{"salah": salah.strip(), "benar": benar.strip(), "kalimat": kalimat.strip()} for salah, benar, kalimat, _ in found_errors]
     except Exception as e:
         st.error(f"Terjadi kesalahan saat menghubungi AI: {e}")
         return []
@@ -113,12 +120,14 @@ def proofread_with_gemini(text_to_check):
 def generate_revised_docx(file_bytes, errors):
     """Membuat dokumen .docx dengan semua kesalahan yang sudah diperbaiki."""
     doc = docx.Document(io.BytesIO(file_bytes))
+    # Iterasi terbalik agar penggantian tidak mengganggu indeks kata lain
     for error in reversed(errors):
         salah = error["Kata/Frasa Salah"]
         benar = error["Perbaikan Sesuai KBBI"]
         for para in doc.paragraphs:
             if salah in para.text:
-                para.text = para.text.replace(salah, benar)
+                # Mengganti hanya satu kali untuk menghindari penggantian berlebih jika kata sama
+                para.text = para.text.replace(salah, benar, 1)
     output_buffer = io.BytesIO()
     doc.save(output_buffer)
     return output_buffer.getvalue()
@@ -162,11 +171,13 @@ if uploaded_file is not None:
                 progress_bar.progress((i + 1) / len(document_pages), text=progress_text)
                 found_errors_on_page = proofread_with_gemini(page['teks'])
                 
+                # --- PROSES HASIL DIMODIFIKASI ---
+                # Menambahkan 'kalimat' ke dalam list all_errors
                 for error in found_errors_on_page:
                     all_errors.append({
                         "Kata/Frasa Salah": error['salah'],
                         "Perbaikan Sesuai KBBI": error['benar'],
-                        "Pada Kalimat": error['kalimat'],
+                        "Pada Kalimat": error['kalimat'], # <-- KOLOM BARU DITAMBAHKAN DI SINI
                         "Ditemukan di Halaman": page['halaman']
                     })
 
@@ -177,12 +188,12 @@ if uploaded_file is not None:
             else:
                 st.warning(f"Ditemukan **{len(all_errors)}** potensi kesalahan dalam dokumen.")
                 
-                # Menampilkan hasil dalam bentuk tabel sederhana
-                st.table(all_errors)
+                # Menggunakan st.dataframe untuk tampilan yang lebih baik
+                df_errors = pd.DataFrame(all_errors)
+                st.dataframe(df_errors, use_container_width=True)
                 
-                # --- BAGIAN DOWNLOAD YANG DISERDERHANAKAN ---
-                st.subheader("Unduh Hasil")
-                
+                # --- BAGIAN DOWNLOAD ---
+                st.subheader("Download Hasil")
                 col1, col2 = st.columns(2)
 
                 with col1:
@@ -208,7 +219,3 @@ if uploaded_file is not None:
                                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                                 use_container_width=True
                             )
-
-
-
-
