@@ -4,29 +4,32 @@ import docx
 import fitz  # PyMuPDF
 import io
 import re
-import zipfile
 from docx.enum.text import WD_COLOR_INDEX
-import pandas as pd # <-- Import pandas untuk st.dataframe
+import pandas as pd
+import zipfile
 
-# --- Konfigurasi Awal ---
+# --- Konfigurasi Awal Halaman ---
 st.set_page_config(
     page_title="Proofreader Bahasa Indonesia",
     layout="wide"
 )
 
-# --- HEADER APLIKASI ---
+# --- Header Aplikasi ---
 try:
-    # Logo diperbesar dengan mengubah width dari 150 menjadi 250
+    # Ganti "Logo_IFG-removebg-preview.png" dengan nama file logo Anda
     st.image("Logo_IFG-removebg-preview.png", width=250)
-except Exception as e:
-    st.warning("Logo tidak ditemukan. Pastikan file 'logo.png' ada di direktori yang sama.")
+except Exception:
+    st.warning("Logo tidak ditemukan. Pastikan file logo ada di direktori yang sama.")
 
-st.markdown("<h1 style='text-align: center;'>Website Proofreader Departemen COE Divisi SKAI IFG</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>Website Proofreader COE Divisi SKAI IFG</h1>", unsafe_allow_html=True)
 st.caption("Unggah dokumen (PDF/DOCX) untuk mendeteksi kesalahan ketik, ejaan, dan tata bahasa.")
+
+# --- Inisialisasi Session State ---
+# "Papan Tulis" untuk menyimpan hasil analisis agar tidak hilang saat script di-rerun.
 if 'analysis_results' not in st.session_state:
     st.session_state.analysis_results = None
 
-# --- Konfigurasi API Key (LEBIH AMAN) ---
+# --- Konfigurasi API Key Google ---
 try:
     api_key = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=api_key)
@@ -41,7 +44,7 @@ except Exception as e:
 # --- FUNGSI-FUNGSI UTAMA ---
 
 def extract_text_with_pages(uploaded_file):
-    """Mengekstrak teks dari file DOCX."""
+    """Mengekstrak teks dari file PDF atau DOCX."""
     pages_content = []
     file_extension = uploaded_file.name.split('.')[-1].lower()
     file_bytes = uploaded_file.getvalue()
@@ -72,9 +75,7 @@ def proofread_with_gemini(text_to_check):
     """Mengirim teks ke Gemini untuk proofreading dan mem-parsing hasilnya."""
     if not text_to_check or text_to_check.isspace():
         return []
-
-    # --- PROMPT DIMODIFIKASI ---
-    # Menambahkan instruksi untuk menyertakan kalimat asli
+    
     prompt = f"""
     Anda adalah seorang auditor dan ahli bahasa Indonesia yang sangat teliti.
     Tugas Anda adalah melakukan proofread pada teks berikut. Fokus pada:
@@ -90,8 +91,6 @@ def proofread_with_gemini(text_to_check):
     10. Pada bagian nomor surat, itu juga tidak perlu di cek
     11. Kalau ada kata-kata yang tidak sesuai KBBI dan PUEBI, tolong jangan highlight semua kalimatnya, tapi cukup highlight kata-kata yang salah serta perbaiki kata-kata itu aja, jangan perbaiki semua kalimatnya
     12. Ketika Anda perbaiki, fontnya pastikan Arial dengan ukuran 11 juga
-    13. Jika pada  "Indonesia Financial Group" tertulis "Financial", tolong perbaiki menjadi "Financial" dan jangan italic
-    14. Pastikan yang benar adalah "Satuan Kerja Audit Internal"
 
     PENTING: Berikan hasil dalam format yang SANGAT KETAT. Untuk setiap kesalahan, gunakan format:
     [SALAH] kata atau frasa yang salah -> [BENAR] kata atau frasa perbaikan -> [KALIMAT] kalimat lengkap asli tempat kesalahan ditemukan
@@ -105,33 +104,23 @@ def proofread_with_gemini(text_to_check):
     ---
     {text_to_check}
     """
-
     try:
         response = model.generate_content(prompt)
-        # --- REGEX DIMODIFIKASI ---
-        # Menambahkan grup ketiga untuk menangkap [KALIMAT]
         pattern = re.compile(r"\[SALAH\]\s*(.*?)\s*->\s*\[BENAR\]\s*(.*?)\s*->\s*\[KALIMAT\]\s*(.*?)\s*(\n|$)", re.IGNORECASE)
         found_errors = pattern.findall(response.text)
-        
-        # --- RETURN DIMODIFIKASI ---
-        # Menambahkan 'kalimat' ke dalam dictionary
         return [{"salah": salah.strip(), "benar": benar.strip(), "kalimat": kalimat.strip()} for salah, benar, kalimat, _ in found_errors]
     except Exception as e:
         st.error(f"Terjadi kesalahan saat menghubungi AI: {e}")
         return []
 
-# --- FUNGSI UNTUK MEMBUAT OUTPUT DOKUMEN ---
-
 def generate_revised_docx(file_bytes, errors):
     """Membuat dokumen .docx dengan semua kesalahan yang sudah diperbaiki."""
     doc = docx.Document(io.BytesIO(file_bytes))
-    # Iterasi terbalik agar penggantian tidak mengganggu indeks kata lain
     for error in reversed(errors):
         salah = error["Kata/Frasa Salah"]
         benar = error["Perbaikan Sesuai KBBI"]
         for para in doc.paragraphs:
             if salah in para.text:
-                # Mengganti hanya satu kali untuk menghindari penggantian berlebih jika kata sama
                 para.text = para.text.replace(salah, benar, 1)
     output_buffer = io.BytesIO()
     doc.save(output_buffer)
@@ -169,85 +158,78 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     st.info(f"File yang diunggah: **{uploaded_file.name}**")
 
+    # BAGIAN 1: Tombol untuk Memulai Analisis
+    # Tugas blok ini HANYA untuk menganalisis dan menyimpan hasil ke session_state.
     if st.button("Mulai Analisis", type="primary", use_container_width=True):
-        with st.spinner("Membaca dan mengekstrak teks dari dokumen..."):
+        with st.spinner("Membaca dan menganalisis dokumen..."):
             document_pages = extract_text_with_pages(uploaded_file)
+            
+            if document_pages:
+                all_errors = []
+                progress_bar = st.progress(0, text="Menganalisis teks dengan AI...")
+                
+                for i, page in enumerate(document_pages):
+                    progress_text = f"Menganalisis Bagian {i + 1}/{len(document_pages)}..."
+                    progress_bar.progress((i + 1) / len(document_pages), text=progress_text)
+                    found_errors_on_page = proofread_with_gemini(page['teks'])
+                    
+                    for error in found_errors_on_page:
+                        all_errors.append({
+                            "Kata/Frasa Salah": error['salah'],
+                            "Perbaikan Sesuai KBBI": error['benar'],
+                            "Pada Kalimat": error['kalimat'],
+                            "Ditemukan di Halaman": page['halaman']
+                        })
+                progress_bar.empty()
+                # Simpan hasil ke "papan tulis"
+                st.session_state.analysis_results = all_errors
+
+# BAGIAN 2: Blok untuk Menampilkan Hasil
+# Blok ini terpisah dan akan selalu memeriksa "papan tulis" (session_state) setiap kali ada interaksi.
+if st.session_state.analysis_results is not None:
+    all_errors = st.session_state.analysis_results
+
+    if not all_errors:
+        st.success("Tidak ada kesalahan ejaan atau ketik yang ditemukan dalam dokumen.")
+    else:
+        st.warning(f"Ditemukan **{len(all_errors)}** potensi kesalahan dalam dokumen.")
         
-        if document_pages:
-            st.success(f"Ekstraksi teks berhasil. Memproses {len(document_pages)} bagian teks.")
+        df_errors = pd.DataFrame(all_errors)
+        st.dataframe(df_errors, use_container_width=True)
+        
+        st.subheader("Unduh Hasil")
+        
+        if uploaded_file.name.endswith('.docx'):
+            with st.spinner("Mempersiapkan semua file unduhan..."):
+                revised_docx_data = generate_revised_docx(uploaded_file.getvalue(), all_errors)
+                highlighted_docx_data = generate_highlighted_docx(uploaded_file.getvalue(), all_errors)
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                st.download_button(
+                    label="Unduh Direvisi (.docx)",
+                    data=revised_docx_data,
+                    file_name=f"revisi_{uploaded_file.name}",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    use_container_width=True
+                )
             
-            all_errors = []
-            progress_bar = st.progress(0, text="Menganalisis teks dengan AI...")
+            with col2:
+                st.download_button(
+                    label="Unduh Highlight (.docx)",
+                    data=highlighted_docx_data,
+                    file_name=f"highlight_{uploaded_file.name}",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    use_container_width=True
+                )
             
-            for i, page in enumerate(document_pages):
-                progress_text = f"Menganalisis Bagian {i + 1}/{len(document_pages)}..."
-                progress_bar.progress((i + 1) / len(document_pages), text=progress_text)
-                found_errors_on_page = proofread_with_gemini(page['teks'])
-                
-                # --- PROSES HASIL DIMODIFIKASI ---
-                # Menambahkan 'kalimat' ke dalam list all_errors
-                for error in found_errors_on_page:
-                    all_errors.append({
-                        "Kata/Frasa Salah": error['salah'],
-                        "Perbaikan Sesuai KBBI": error['benar'],
-                        "Pada Kalimat": error['kalimat'], # <-- KOLOM BARU DITAMBAHKAN DI SINI
-                        "Ditemukan di Halaman": page['halaman']
-                    })
-
-            progress_bar.empty()
-            st.session_state.analysis_results = all_errors
-
-            if not all_errors:
-                st.success("Tidak ada kesalahan ejaan atau ketik yang ditemukan dalam dokumen.")
-            else:
-                st.warning(f"Ditemukan **{len(all_errors)}** potensi kesalahan dalam dokumen.")
-                
-                # Menggunakan st.dataframe untuk tampilan yang lebih baik
-                df_errors = pd.DataFrame(all_errors)
-                st.dataframe(df_errors, use_container_width=True)
-                
-                # --- BAGIAN DOWNLOAD ---
-                st.subheader("Unduh Hasil")
-
-                if uploaded_file.name.endswith('.docx'):
-                    with st.spinner("Mempersiapkan semua file unduhan..."):
-                        revised_docx_data = generate_revised_docx(uploaded_file.getvalue(), all_errors)
-                        highlighted_docx_data = generate_highlighted_docx(uploaded_file.getvalue(), all_errors)
-
-                    # Membuat 3 kolom untuk tombol download
-                    col1, col2, col3 = st.columns(3)
-
-                with col1:
-                    if uploaded_file.name.endswith('.docx'):
-                        with st.spinner("Membuat file revisi..."):
-                            revised_docx_data = generate_revised_docx(uploaded_file.getvalue(), all_errors)
-                            st.download_button(
-                                label="Unduh DOCX (Sudah Direvisi)",
-                                data=revised_docx_data,
-                                file_name=f"revisi_{uploaded_file.name}",
-                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                                use_container_width=True
-                            )
-                
-                with col2:
-                    if uploaded_file.name.endswith('.docx'):
-                        with st.spinner("Membuat file highlight..."):
-                            highlighted_docx_data = generate_highlighted_docx(uploaded_file.getvalue(), all_errors)
-                            st.download_button(
-                                label="Unduh DOCX (Highlight Kesalahan)",
-                                data=highlighted_docx_data,
-                                file_name=f"highlight_{uploaded_file.name}",
-                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                                use_container_width=True
-                            )
-
-                with col3:
-                     # Membuat file ZIP di memori
-                    zip_data = create_zip_archive(revised_docx_data, highlighted_docx_data, uploaded_file.name)
-                    st.download_button(
-                        label="Unduh Semua (.zip)",
-                        data=zip_data,
-                        file_name=f"hasil_proofread_{uploaded_file.name.split('.')[0]}.zip",
-                        mime="application/zip",
-                        use_container_width=True
-                    )
+            with col3:
+                zip_data = create_zip_archive(revised_docx_data, highlighted_docx_data, uploaded_file.name)
+                st.download_button(
+                    label="Unduh Semua (.zip)",
+                    data=zip_data,
+                    file_name=f"hasil_proofread_{uploaded_file.name.split('.')[0]}.zip",
+                    mime="application/zip",
+                    use_container_width=True
+                )
