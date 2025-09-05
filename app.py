@@ -4,6 +4,7 @@ import docx
 import fitz  # PyMuPDF
 import io
 import re
+import zipfile
 from docx.enum.text import WD_COLOR_INDEX
 import pandas as pd # <-- Import pandas untuk st.dataframe
 
@@ -22,6 +23,8 @@ except Exception as e:
 
 st.markdown("<h1 style='text-align: center;'>Website Proofreader Departemen COE Divisi SKAI IFG</h1>", unsafe_allow_html=True)
 st.caption("Unggah dokumen (PDF/DOCX) untuk mendeteksi kesalahan ketik, ejaan, dan tata bahasa.")
+if 'analysis_results' not in st.session_state:
+    st.session_state.analysis_results = None
 
 # --- Konfigurasi API Key (LEBIH AMAN) ---
 try:
@@ -148,6 +151,14 @@ def generate_highlighted_docx(file_bytes, errors):
     doc.save(output_buffer)
     return output_buffer.getvalue()
 
+def create_zip_archive(revised_data, highlighted_data, original_filename):
+    """Menggabungkan dua file DOCX ke dalam satu arsip ZIP di memori."""
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        zip_file.writestr(f"revisi_{original_filename}", revised_data)
+        zip_file.writestr(f"highlight_{original_filename}", highlighted_data)
+    return zip_buffer.getvalue()
+
 # --- ANTARMUKA STREAMLIT ---
 uploaded_file = st.file_uploader(
     "Pilih file PDF atau DOCX",
@@ -184,6 +195,7 @@ if uploaded_file is not None:
                     })
 
             progress_bar.empty()
+            st.session_state.analysis_results = all_errors
 
             if not all_errors:
                 st.success("Tidak ada kesalahan ejaan atau ketik yang ditemukan dalam dokumen.")
@@ -195,8 +207,15 @@ if uploaded_file is not None:
                 st.dataframe(df_errors, use_container_width=True)
                 
                 # --- BAGIAN DOWNLOAD ---
-                st.subheader("Download Hasil")
-                col1, col2 = st.columns(2)
+                st.subheader("Unduh Hasil")
+
+                if uploaded_file.name.endswith('.docx'):
+                    with st.spinner("Mempersiapkan semua file unduhan..."):
+                        revised_docx_data = generate_revised_docx(uploaded_file.getvalue(), all_errors)
+                        highlighted_docx_data = generate_highlighted_docx(uploaded_file.getvalue(), all_errors)
+
+                    # Membuat 3 kolom untuk tombol download
+                    col1, col2, col3 = st.columns(3)
 
                 with col1:
                     if uploaded_file.name.endswith('.docx'):
@@ -222,3 +241,13 @@ if uploaded_file is not None:
                                 use_container_width=True
                             )
 
+                with col3:
+                     # Membuat file ZIP di memori
+                    zip_data = create_zip_archive(revised_docx_data, highlighted_docx_data, uploaded_file.name)
+                    st.download_button(
+                        label="Unduh Semua (.zip)",
+                        data=zip_data,
+                        file_name=f"hasil_proofread_{uploaded_file.name.split('.')[0]}.zip",
+                        mime="application/zip",
+                        use_container_width=True
+                    )
