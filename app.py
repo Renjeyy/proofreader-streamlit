@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 try:
-    st.image("Logo_IFG-removebg-preview.png", width=150) # Sesuaikan lebar logo sesuai kebutuhan
+    st.image("Logo_IFG-removebg-preview.png", width=250) # Sesuaikan lebar logo sesuai kebutuhan
 except Exception as e:
     st.warning("Logo tidak ditemukan. Pastikan file 'logo.png' ada di direktori yang sama.")
 
@@ -166,6 +166,7 @@ if uploaded_file is not None:
                     all_errors.append({
                         "Kata/Frasa Salah": error['salah'],
                         "Perbaikan Sesuai KBBI": error['benar'],
+                        "Pada Kalimat": error['kalimat'],
                         "Ditemukan di Halaman": page['halaman']
                     })
 
@@ -207,6 +208,7 @@ if uploaded_file is not None:
                                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                                 use_container_width=True
                             )
+
 
 
 
