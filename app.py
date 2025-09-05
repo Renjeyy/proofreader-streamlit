@@ -12,7 +12,13 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("Website Proofreader COE Divisi SKAI IFG")
+try:
+    st.image("Logo_IFG-removebg-preview.png", width=150) # Sesuaikan lebar logo sesuai kebutuhan
+except Exception as e:
+    st.warning("Logo tidak ditemukan. Pastikan file 'logo.png' ada di direktori yang sama.")
+
+# Menggunakan HTML untuk menengahkan judul
+st.markdown("<h1 style='text-align: center;'>Website Proofreader COE Divisi SKAI IFG</h1>", unsafe_allow_html=True)
 st.caption("Unggah dokumen (PDF/DOCX) untuk mendeteksi kesalahan ketik, ejaan, dan tata bahasa.")
 
 # --- Konfigurasi API Key (LEBIH AMAN) ---
@@ -201,5 +207,6 @@ if uploaded_file is not None:
                                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                                 use_container_width=True
                             )
+
 
 
