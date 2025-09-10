@@ -23,10 +23,12 @@ except Exception:
     st.warning("Logo tidak ditemukan. Pastikan file logo ada di direktori yang sama.")
 
 st.markdown("<h1 style='text-align: center;'>Website Proofreader COE Divisi SKAI IFG</h1>", unsafe_allow_html=True)
-st.caption("Unggah dokumen (PDF/DOCX) untuk mendeteksi kesalahan ketik, ejaan, dan tata bahasa.")
+
+# --- BAGIAN 1: PROOFREAD ---
+st.divider() # Garis pemisah
+st.header("1. Proofread Dokumen")
 
 # --- Inisialisasi Session State ---
-# "Papan Tulis" untuk menyimpan hasil analisis agar tidak hilang saat script di-rerun.
 if 'analysis_results' not in st.session_state:
     st.session_state.analysis_results = None
 
@@ -131,21 +133,14 @@ def generate_revised_docx(file_bytes, errors):
         salah = error["Kata/Frasa Salah"]
         benar = error["Perbaikan Sesuai KBBI"]
         for para in doc.paragraphs:
-            # Hanya proses paragraf yang mengandung kata yang salah
             if salah in para.text:
-                # 1. Simpan properti font dari 'run' pertama di paragraf.
-                # Kita asumsikan seluruh paragraf punya gaya yang sama.
                 original_font = None
                 if para.runs:
                     original_font = para.runs[0].font
-
-                # 2. Lakukan penggantian teks seperti biasa.
-                # Tindakan ini akan menghapus format asli.
+                
                 current_text = para.text
                 para.text = current_text.replace(salah, benar, 1)
 
-                # 3. Terapkan kembali properti font yang sudah disimpan
-                # ke semua 'run' baru di dalam paragraf yang sudah diubah.
                 if original_font:
                     for run in para.runs:
                         font = run.font
@@ -182,9 +177,9 @@ def create_zip_archive(revised_data, highlighted_data, original_filename):
         zip_file.writestr(f"highlight_{original_filename}", highlighted_data)
     return zip_buffer.getvalue()
 
-# --- ANTARMUKA STREAMLIT ---
+# --- ANTARMUKA STREAMLIT UNTUK BAGIAN 1 ---
 uploaded_file = st.file_uploader(
-    "Pilih file PDF atau DOCX",
+    "Unggah dokumen (PDF/DOCX)",
     type=['pdf', 'docx'],
     help="File yang diunggah akan dianalisis untuk menemukan kesalahan ejaan dan ketik."
 )
@@ -192,8 +187,6 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     st.info(f"File yang diunggah: **{uploaded_file.name}**")
 
-    # BAGIAN 1: Tombol untuk Memulai Analisis
-    # Tugas blok ini HANYA untuk menganalisis dan menyimpan hasil ke session_state.
     if st.button("Mulai Analisis", type="primary", use_container_width=True):
         with st.spinner("Membaca dan menganalisis dokumen..."):
             document_pages = extract_text_with_pages(uploaded_file)
@@ -215,16 +208,13 @@ if uploaded_file is not None:
                             "Ditemukan di Halaman": page['halaman']
                         })
                 progress_bar.empty()
-                # Simpan hasil ke "papan tulis"
                 st.session_state.analysis_results = all_errors
 
-# BAGIAN 2: Blok untuk Menampilkan Hasil
-# Blok ini terpisah dan akan selalu memeriksa "papan tulis" (session_state) setiap kali ada interaksi.
 if st.session_state.analysis_results is not None:
     all_errors = st.session_state.analysis_results
 
     if not all_errors:
-        st.success("Tidak ada kesalahan ejaan atau ketik yang ditemukan dalam dokumen.")
+        st.success("✅ Tidak ada kesalahan ejaan atau ketik yang ditemukan dalam dokumen.")
     else:
         st.warning(f"Ditemukan **{len(all_errors)}** potensi kesalahan dalam dokumen.")
         
@@ -233,7 +223,7 @@ if st.session_state.analysis_results is not None:
         
         st.subheader("Unduh Hasil")
         
-        if uploaded_file.name.endswith('.docx'):
+        if uploaded_file and uploaded_file.name.endswith('.docx'):
             with st.spinner("Mempersiapkan semua file unduhan..."):
                 revised_docx_data = generate_revised_docx(uploaded_file.getvalue(), all_errors)
                 highlighted_docx_data = generate_highlighted_docx(uploaded_file.getvalue(), all_errors)
@@ -267,5 +257,8 @@ if st.session_state.analysis_results is not None:
                     mime="application/zip",
                     use_container_width=True
                 )
-        st.warning("Hasilnya masih bisa salah, tolong dicek ulang lagi.")
+    st.warning("Hasilnya masih bisa salah, tolong dicek ulang lagi.")
 
+# --- BAGIAN 2: BANDINGKAN DOKUMEN ---
+st.divider() # Garis pemisah
+st.header("2. Bandingkan Dokumen")
