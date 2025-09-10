@@ -214,7 +214,7 @@ if st.session_state.analysis_results is not None:
     all_errors = st.session_state.analysis_results
 
     if not all_errors:
-        st.success("✅ Tidak ada kesalahan ejaan atau ketik yang ditemukan dalam dokumen.")
+        st.success("Tidak ada kesalahan ejaan atau ketik yang ditemukan dalam dokumen.")
     else:
         st.warning(f"Ditemukan **{len(all_errors)}** potensi kesalahan dalam dokumen.")
         
@@ -262,3 +262,21 @@ if st.session_state.analysis_results is not None:
 # --- BAGIAN 2: BANDINGKAN DOKUMEN ---
 st.divider() # Garis pemisah
 st.header("2. Bandingkan Dokumen")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    original_file = st.file_uploader(
+        "Unggah Dokumen Asli",
+        type=['docx'],
+        key="original_doc" 
+    )
+
+with col2:
+    proofread_file = st.file_uploader(
+        "Unggah Dokumen Hasil Proofread",
+        type=['docx'],
+        key="proofread_doc" 
+    )
+if original_file is not None and proofread_file is not None:
+    st.success("Kedua dokumen berhasil diunggah. Siap untuk dibandingkan.")
