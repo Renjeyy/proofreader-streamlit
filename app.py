@@ -310,23 +310,24 @@ def find_word_diff(original_para, revised_para):
     return ", ".join(diffs) if diffs else "Perubahan Minor"
 
 def create_comparison_docx(df):
-    """Membuat file DOCX dari DataFrame hasil perbandingan dengan format font yang diinginkan."""
+    """
+    Membuat file DOCX dari DataFrame hasil perbandingan
+    dengan highlight pada kata yang direvisi.
+    """
     doc = Document()
-    
     # Menambahkan Judul Utama Dokumen
     title = doc.add_heading('Hasil Perbandingan Dokumen', level=1)
     for run in title.runs:
         run.font.name = 'Arial'
         run.font.size = Pt(12)
         run.bold = True
-    doc.add_paragraph() # Spasi
+    doc.add_paragraph()
 
     # Menambahkan Tabel
     table = doc.add_table(rows=1, cols=len(df.columns))
     table.style = 'Table Grid'
-    table.autofit = True
-
-    # Menambahkan Header Tabel dengan Font Arial Bold
+    
+    # Menambahkan Header Tabel (Arial 11 Bold)
     hdr_cells = table.rows[0].cells
     for i, col_name in enumerate(df.columns):
         p = hdr_cells[i].paragraphs[0]
@@ -336,13 +337,40 @@ def create_comparison_docx(df):
             run.font.bold = True
             run.font.size = Pt(11)
 
-    # Menambahkan Isi Tabel dengan Font Arial 11
+    # Menambahkan Isi Tabel dengan Logika Highlighting
     for index, row in df.iterrows():
         row_cells = table.add_row().cells
-        for i, cell_value in enumerate(row):
-            p = row_cells[i].paragraphs[0]
-            p.text = str(cell_value)
-            for run in p.runs:
+        # Iterasi melalui setiap sel di baris
+        for i, col_name in enumerate(df.columns):
+            cell_paragraph = row_cells[i].paragraphs[0]
+            cell_value = str(row[col_name])
+            
+            # --- LOGIKA BARU UNTUK HIGHLIGHTING ---
+            # Jika ini adalah kolom 'Kalimat Revisi', terapkan highlight
+            if col_name == "Kalimat Revisi":
+                original_text = str(row["Kalimat Awal"])
+                revised_text = cell_value
+                
+                # Gunakan difflib untuk menemukan perbedaan kata per kata
+                matcher = difflib.SequenceMatcher(None, original_text.split(), revised_text.split())
+                
+                for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+                    # Ambil bagian dari kalimat revisi
+                    text_segment = " ".join(revised_text.split()[j1:j2]) + " "
+                    
+                    if tag == 'equal':
+                        # Jika sama, tambahkan sebagai teks biasa
+                        run = cell_paragraph.add_run(text_segment)
+                        run.font.name = 'Arial'
+                        run.font.size = Pt(11)
+                    else: # Untuk 'replace' atau 'insert', beri highlight
+                        run = cell_paragraph.add_run(text_segment)
+                        run.font.name = 'Arial'
+                        run.font.size = Pt(11)
+                        run.font.highlight_color = WD_COLOR_INDEX.YELLOW
+            else:
+                # Untuk kolom lain, tulis teks seperti biasa
+                run = cell_paragraph.add_run(cell_value)
                 run.font.name = 'Arial'
                 run.font.size = Pt(11)
 
@@ -402,5 +430,6 @@ if 'comparison_results' in st.session_state and not st.session_state.comparison_
 
 elif 'comparison_results' in st.session_state:
      st.info("Tidak ditemukan perbedaan signifikan antar paragraf di kedua dokumen.")
+
 
 
