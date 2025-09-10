@@ -6,6 +6,7 @@ import io
 import re
 from docx.enum.text import WD_COLOR_INDEX
 import pandas as pd
+from docx.shared import Pt
 import zipfile
 
 # --- Konfigurasi Awal Halaman ---
@@ -120,14 +121,41 @@ def proofread_with_gemini(text_to_check):
         return []
 
 def generate_revised_docx(file_bytes, errors):
-    """Membuat dokumen .docx dengan semua kesalahan yang sudah diperbaiki."""
+    """
+    Membuat dokumen .docx dengan semua kesalahan yang sudah diperbaiki
+    SAMBIL MEMPERTAHANKAN FONT ASLI (Arial 11 untuk body dan Arial 12 untuk judul).
+    """
     doc = docx.Document(io.BytesIO(file_bytes))
+
     for error in reversed(errors):
         salah = error["Kata/Frasa Salah"]
         benar = error["Perbaikan Sesuai KBBI"]
         for para in doc.paragraphs:
+            # Hanya proses paragraf yang mengandung kata yang salah
             if salah in para.text:
-                para.text = para.text.replace(salah, benar, 1)
+                # 1. Simpan properti font dari 'run' pertama di paragraf.
+                # Kita asumsikan seluruh paragraf punya gaya yang sama.
+                original_font = None
+                if para.runs:
+                    original_font = para.runs[0].font
+
+                # 2. Lakukan penggantian teks seperti biasa.
+                # Tindakan ini akan menghapus format asli.
+                current_text = para.text
+                para.text = current_text.replace(salah, benar, 1)
+
+                # 3. Terapkan kembali properti font yang sudah disimpan
+                # ke semua 'run' baru di dalam paragraf yang sudah diubah.
+                if original_font:
+                    for run in para.runs:
+                        font = run.font
+                        font.name = original_font.name
+                        font.size = original_font.size
+                        font.bold = original_font.bold
+                        font.italic = original_font.italic
+                        font.underline = original_font.underline
+                        font.color.rgb = original_font.color.rgb
+
     output_buffer = io.BytesIO()
     doc.save(output_buffer)
     return output_buffer.getvalue()
@@ -240,3 +268,4 @@ if st.session_state.analysis_results is not None:
                     use_container_width=True
                 )
         st.warning("Hasilnya masih bisa salah, tolong dicek ulang lagi.")
+
