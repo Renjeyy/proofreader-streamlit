@@ -378,7 +378,6 @@ if original_file is not None and proofread_file is not None:
                                 "Kalimat Awal": original_para,
                                 "Kalimat Revisi": revised_para,
                                 "Kata yang Direvisi": word_diff,
-                                "Confidence Kalimat Revisi lebih bagus dari Awal (%)": confidence
                             })
             
             # Simpan hasil perbandingan ke session state
@@ -403,4 +402,5 @@ if 'comparison_results' in st.session_state and not st.session_state.comparison_
 
 elif 'comparison_results' in st.session_state:
      st.info("Tidak ditemukan perbedaan signifikan antar paragraf di kedua dokumen.")
+
 
