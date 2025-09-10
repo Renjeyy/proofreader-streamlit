@@ -426,10 +426,10 @@ if 'comparison_results' in st.session_state and not st.session_state.comparison_
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         use_container_width=True
     )
-    st.info("Catatan: Skor 'Keyakinan Model' adalah estimasi dari AI dan bukan metrik statistik absolut.")
 
 elif 'comparison_results' in st.session_state:
      st.info("Tidak ditemukan perbedaan signifikan antar paragraf di kedua dokumen.")
+
 
 
 
