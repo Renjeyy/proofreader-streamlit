@@ -260,23 +260,145 @@ if st.session_state.analysis_results is not None:
     st.warning("Hasilnya masih bisa salah, tolong dicek ulang lagi.")
 
 # --- BAGIAN 2: BANDINGKAN DOKUMEN ---
-st.divider() # Garis pemisah
+# --- BAGIAN 2: BANDINGKAN DOKUMEN ---
+st.divider()
 st.header("2. Bandingkan Dokumen")
 
+# Tambahan import yang mungkin diperlukan untuk bagian ini
+import difflib
+from docx import Document
+from docx.shared import Pt
+import language_tool_python
+
+# --- Fungsi-fungsi Helper untuk Bagian 2 ---
+
+@st.cache_resource
+def get_language_tool():
+    """Menginisialisasi LanguageTool agar tidak di-load berulang kali."""
+    return language_tool_python.LanguageTool('id-ID')
+
+def extract_paragraphs(docx_file):
+    """Membaca file DOCX dan mengembalikan isinya sebagai daftar paragraf."""
+    try:
+        source_stream = io.BytesIO(docx_file.getvalue())
+        doc = docx.Document(source_stream)
+        return [p.text for p in doc.paragraphs if p.text.strip() != ""]
+    except Exception as e:
+        st.error(f"Gagal membaca file {docx_file.name}: {e}")
+        return []
+
+def get_statistical_confidence(original_sentence, revised_sentence, tool):
+    """Memberikan skor keyakinan berbasis aturan tata bahasa (LanguageTool)."""
+    if original_sentence == revised_sentence:
+        return 100
+    
+    errors_original = len(tool.check(original_sentence))
+    errors_revised = len(tool.check(revised_sentence))
+    
+    if errors_revised < errors_original:
+        return 95  # Keyakinan tinggi karena revisi mengurangi error
+    elif errors_revised == errors_original:
+        return 50  # Netral, tidak ada perubahan jumlah error
+    else:
+        return 10  # Keyakinan rendah karena revisi justru menambah error
+
+def find_word_diff(original_para, revised_para):
+    """Menemukan kata-kata yang berbeda antara dua paragraf."""
+    matcher = difflib.SequenceMatcher(None, original_para.split(), revised_para.split())
+    diffs = []
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == 'replace' or tag == 'insert':
+            diffs.append(" ".join(revised_para.split()[j1:j2]))
+    return ", ".join(diffs) if diffs else "Perubahan Minor"
+
+def create_comparison_docx(df):
+    """Membuat file DOCX dari DataFrame hasil perbandingan dengan format font yang terjaga."""
+    doc = Document()
+    # Menambahkan Judul Utama Dokumen
+    title = doc.add_heading('Hasil Perbandingan Dokumen', level=1)
+    for run in title.runs:
+        run.font.name = 'Arial'
+        run.font.size = Pt(12)
+        run.bold = True
+    doc.add_paragraph()
+
+    # Menambahkan Tabel
+    table = doc.add_table(rows=1, cols=len(df.columns))
+    table.style = 'Table Grid'
+    table.autofit = True
+
+    # Menambahkan Header Tabel (Arial 11 Bold)
+    hdr_cells = table.rows[0].cells
+    for i, col_name in enumerate(df.columns):
+        p = hdr_cells[i].paragraphs[0]
+        p.text = col_name
+        for run in p.runs:
+            run.font.name = 'Arial'
+            run.font.bold = True
+            run.font.size = Pt(11)
+
+    # Menambahkan Isi Tabel (Arial 11)
+    for index, row in df.iterrows():
+        row_cells = table.add_row().cells
+        for i, cell_value in enumerate(row):
+            p = row_cells[i].paragraphs[0]
+            p.text = str(cell_value)
+            for run in p.runs:
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+
+    output_buffer = io.BytesIO()
+    doc.save(output_buffer)
+    return output_buffer.getvalue()
+
+# --- Antarmuka Streamlit untuk Bagian 2 ---
+
 col1, col2 = st.columns(2)
-
 with col1:
-    original_file = st.file_uploader(
-        "Unggah Dokumen Asli",
-        type=['docx'],
-        key="original_doc" 
-    )
-
+    original_file = st.file_uploader("Unggah Dokumen Asli", type=['docx'], key="original_doc")
 with col2:
-    proofread_file = st.file_uploader(
-        "Unggah Dokumen Hasil Proofread",
-        type=['docx'],
-        key="proofread_doc" 
-    )
+    proofread_file = st.file_uploader("Unggah Dokumen Hasil Proofread", type=['docx'], key="proofread_doc")
+
 if original_file is not None and proofread_file is not None:
-    st.success("Kedua dokumen berhasil diunggah. Siap untuk dibandingkan.")
+    if st.button("Bandingkan Dokumen", use_container_width=True, type="primary"):
+        with st.spinner("Membandingkan dokumen dan menganalisis secara statistik..."):
+            tool = get_language_tool() # Load language tool
+            original_paras = extract_paragraphs(original_file)
+            revised_paras = extract_paragraphs(proofread_file)
+            comparison_results = []
+            matcher = difflib.SequenceMatcher(None, original_paras, revised_paras)
+
+            for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+                if tag == 'replace':
+                    for i in range(i1, i2):
+                        original_para = original_paras[i]
+                        revised_para = revised_paras[j1 + (i - i1)] if (j1 + (i - i1)) < j2 else ""
+                        if revised_para:
+                            word_diff = find_word_diff(original_para, revised_para)
+                            confidence = get_statistical_confidence(original_para, revised_para, tool)
+                            comparison_results.append({
+                                "Kalimat Awal": original_para,
+                                "Kalimat Revisi": revised_para,
+                                "Kata yang Direvisi": word_diff,
+                                "Skor Perbaikan (%)": confidence
+                            })
+            st.session_state.comparison_results = pd.DataFrame(comparison_results)
+
+# Menampilkan hasil jika ada di session state
+if 'comparison_results' in st.session_state and not st.session_state.comparison_results.empty:
+    df_comparison = st.session_state.comparison_results
+    st.success(f"Perbandingan selesai. Ditemukan {len(df_comparison)} paragraf yang direvisi.")
+    st.dataframe(df_comparison, use_container_width=True)
+
+    docx_data = create_comparison_docx(df_comparison)
+    st.download_button(
+        label="📄 Unduh Hasil Perbandingan (.docx)",
+        data=docx_data,
+        file_name=f"perbandingan_{original_file.name}",
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        use_container_width=True
+    )
+    st.info("Catatan: 'Skor Perbaikan' dihitung berdasarkan pengurangan jumlah kesalahan tata bahasa yang terdeteksi oleh LanguageTool.", icon="💡")
+
+elif 'comparison_results' in st.session_state:
+     st.info("Tidak ditemukan perbedaan signifikan antar paragraf di kedua dokumen.")
