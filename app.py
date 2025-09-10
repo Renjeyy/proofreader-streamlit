@@ -100,6 +100,7 @@ def proofread_with_gemini(text_to_check):
     16. Jika terdapat kata "reviu", biarkan itu sebagai benar
     17. Kalau ada kata "IM", "ST", "SKAI", "IFG", "TV (Angka Romawi)", "RKAT", dan "RKAP", itu tidak perlu ditandai sebagai salah dan tidak perlu disarankan untuk italic / bold / underline
     18. Kalau ada kata "email", biarkan itu sebagai benar tapi disarankan italic saja
+    19. Untuk nama modul seperti "Modul Sourcing, dll", itu tidak perlu italic
 
     PENTING: Berikan hasil dalam format yang SANGAT KETAT. Untuk setiap kesalahan, gunakan format:
     [SALAH] kata atau frasa yang salah -> [BENAR] kata atau frasa perbaikan -> [KALIMAT] kalimat lengkap asli tempat kesalahan ditemukan
@@ -402,3 +403,4 @@ if 'comparison_results' in st.session_state and not st.session_state.comparison_
 
 elif 'comparison_results' in st.session_state:
      st.info("Tidak ditemukan perbedaan signifikan antar paragraf di kedua dokumen.")
+
