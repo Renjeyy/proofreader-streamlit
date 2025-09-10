@@ -285,7 +285,7 @@ def get_revision_confidence(original_sentence, revised_sentence):
     if original_sentence == revised_sentence:
         return 100
     prompt = f"""
-    Bandingkan dua kalimat ini berdasarkan PUEBI dan KBBI.
+    Bandingkan dua kalimat ini berdasarkan PUEBI dan KBBI (Pastikan Anda review PUEBI dan KBBI terlebih dahulu sebelum bandingkan).
     Kalimat Asli: "{original_sentence}"
     Kalimat Revisi: "{revised_sentence}"
 
@@ -377,7 +377,7 @@ if original_file is not None and proofread_file is not None:
                                 "Kalimat Awal": original_para,
                                 "Kalimat Revisi": revised_para,
                                 "Kata yang Direvisi": word_diff,
-                                "Keyakinan Model (%)": confidence
+                                "Confidence Kalimat Revisi lebih bagus dari Awal (%)": confidence
                             })
             
             # Simpan hasil perbandingan ke session state
@@ -402,4 +402,3 @@ if 'comparison_results' in st.session_state and not st.session_state.comparison_
 
 elif 'comparison_results' in st.session_state:
      st.info("Tidak ditemukan perbedaan signifikan antar paragraf di kedua dokumen.")
-
