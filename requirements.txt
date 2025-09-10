@@ -4,5 +4,3 @@ pandas
 python-docx
 PyMuPDF
 openpyxl
-zipfile-deflate # (Jika menggunakan zipfile, tambahkan ini untuk kompatibilitas)
-language-tool-python
