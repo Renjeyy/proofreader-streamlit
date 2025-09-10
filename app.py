@@ -392,13 +392,14 @@ if 'comparison_results' in st.session_state and not st.session_state.comparison_
     # Menambahkan tombol download untuk hasil perbandingan
     docx_data = create_comparison_docx(df_comparison)
     st.download_button(
-        label="📄 Unduh Hasil Perbandingan (.docx)",
+        label="Unduh Hasil Perbandingan (.docx)",
         data=docx_data,
         file_name=f"perbandingan_{original_file.name}",
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         use_container_width=True
     )
-    st.info("Catatan: Skor 'Keyakinan Model' adalah estimasi dari AI dan bukan metrik statistik absolut.", icon="💡")
+    st.info("Catatan: Skor 'Keyakinan Model' adalah estimasi dari AI dan bukan metrik statistik absolut.")
 
 elif 'comparison_results' in st.session_state:
      st.info("Tidak ditemukan perbedaan signifikan antar paragraf di kedua dokumen.")
+
