@@ -373,31 +373,19 @@ if original_file is not None and proofread_file is not None:
 
             for tag, i1, i2, j1, j2 in matcher.get_opcodes():
                 if tag == 'replace':
-                    # Ambil pasangan paragraf yang berubah
-                    original_para = " ".join(original_paras[i1:i2])
-                    revised_para = " ".join(revised_paras[j1:j2])
-
-                    # Dapatkan skor keyakinan untuk keseluruhan paragraf (cukup 1x per paragraf)
-                    confidence = get_statistical_confidence(original_para, revised_para, tool)
-                    
-                    # Dapatkan LIST kata-kata yang berbeda
-                    word_diff_list = find_word_diff(original_para, revised_para)
-                    
-                    # Buat satu baris baru UNTUK SETIAP kata yang berbeda
-                    for diff in word_diff_list:
-                        comparison_results.append({
-                            "Kalimat Awal": original_para,
-                            "Kalimat Revisi": revised_para,
-                            "Detail Perubahan": diff, # <-- Kolom ini sekarang berisi satu perubahan spesifik
-                            "Skor Perbaikan (%)": confidence # <-- Skor tetap sama untuk semua perubahan dalam paragraf ini
-                        })
-            
-            # Ganti nama kolom di DataFrame agar sesuai
-            df = pd.DataFrame(comparison_results)
-            if not df.empty:
-                df = df.rename(columns={"Kata yang Direvisi": "Detail Perubahan"})
-
-            st.session_state.comparison_results = df
+                    for i in range(i1, i2):
+                        original_para = original_paras[i]
+                        revised_para = revised_paras[j1 + (i - i1)] if (j1 + (i - i1)) < j2 else ""
+                        if revised_para:
+                            word_diff = find_word_diff(original_para, revised_para)
+                            confidence = get_statistical_confidence(original_para, revised_para, tool)
+                            comparison_results.append({
+                                "Kalimat Awal": original_para,
+                                "Kalimat Revisi": revised_para,
+                                "Kata yang Direvisi": word_diff,
+                                "Skor Perbaikan (%)": confidence
+                            })
+            st.session_state.comparison_results = pd.DataFrame(comparison_results)
 
 # Menampilkan hasil jika ada di session state
 if 'comparison_results' in st.session_state and not st.session_state.comparison_results.empty:
@@ -418,4 +406,5 @@ if 'comparison_results' in st.session_state and not st.session_state.comparison_
 
 elif 'comparison_results' in st.session_state:
      st.info("Tidak ditemukan perbedaan signifikan antar paragraf di kedua dokumen.")
+
 
