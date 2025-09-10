@@ -402,3 +402,4 @@ if 'comparison_results' in st.session_state and not st.session_state.comparison_
 
 elif 'comparison_results' in st.session_state:
      st.info("Tidak ditemukan perbedaan signifikan antar paragraf di kedua dokumen.")
+
