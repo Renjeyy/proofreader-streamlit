@@ -101,6 +101,7 @@ def proofread_with_gemini(text_to_check):
     17. Kalau ada kata "IM", "ST", "SKAI", "IFG", "TV (Angka Romawi)", "RKAT", dan "RKAP", itu tidak perlu ditandai sebagai salah dan tidak perlu disarankan untuk italic / bold / underline
     18. Kalau ada kata "email", biarkan itu sebagai benar tapi disarankan italic saja
     19. Untuk nama modul seperti "Modul Sourcing, dll", itu tidak perlu italic
+    20. Kalau ada kata dalam bahasa inggris yang masih masuk akal dan nyambung dengan kalimat yang dibahas, tidak perlu Anda sarankan untuk ganti ke bahasa indonesia
 
     PENTING: Berikan hasil dalam format yang SANGAT KETAT. Untuk setiap kesalahan, gunakan format:
     [SALAH] kata atau frasa yang salah -> [BENAR] kata atau frasa perbaikan -> [KALIMAT] kalimat lengkap asli tempat kesalahan ditemukan
@@ -544,4 +545,5 @@ if 'coherence_results' in st.session_state:
         }, inplace=True)
 
         st.dataframe(df_coherence, use_container_width=True)
+
 
