@@ -430,6 +430,10 @@ if 'comparison_results' in st.session_state and not st.session_state.comparison_
 elif 'comparison_results' in st.session_state:
      st.info("Tidak ditemukan perbedaan signifikan antar paragraf di kedua dokumen.")
 
+#Bagian 3 yang Anomali Detection
+st.divider()
+st.header("3. Pengecekan Struktur Dokumen")
+
 
 
 
