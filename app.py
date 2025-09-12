@@ -434,6 +434,9 @@ elif 'comparison_results' in st.session_state:
 st.divider()
 st.header("3. Pengecekan Struktur Dokumen")
 
+import difflib
+from docx import Document
+from docx.shared import Pt, Inches
 
 
 
