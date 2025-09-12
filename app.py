@@ -295,7 +295,7 @@ if st.session_state.analysis_results is not None:
                     mime="application/zip",
                     use_container_width=True
                 )
-    st.warning(Jika muncul kalimat Tidak ada kesalahan ejaan atau ketik yang ditemukan dalam dokumen, harap lakukan analisis ulang karena modelnya bisa saja melakukan kesalahan dalam mendeteksi.)
+    st.warning(Harap lakukan analisis ulang jika muncul pesan bahwa tidak ada ejaan yang salah karena model bisa saja tidak berhasil mendeteksi)
 
 
 st.divider()
@@ -546,6 +546,7 @@ if 'coherence_results' in st.session_state:
         }, inplace=True)
 
         st.dataframe(df_coherence, use_container_width=True)
+
 
 
 
