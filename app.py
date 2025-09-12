@@ -157,15 +157,50 @@ def generate_revised_docx(file_bytes, errors):
     return output_buffer.getvalue()
 
 def generate_highlighted_docx(file_bytes, errors):
-    """Membuat dokumen .docx dengan semua kesalahan yang di-highlight."""
+    """
+    Membuat dokumen .docx dengan semua kesalahan yang di-highlight.
+    Versi ini sudah diperbaiki untuk menangani kata yang terpecah di antara 'runs'.
+    """
     doc = docx.Document(io.BytesIO(file_bytes))
     unique_salah = set(error["Kata/Frasa Salah"] for error in errors)
+
     for para in doc.paragraphs:
+        # Cek setiap kata yang salah untuk setiap paragraf
         for term in unique_salah:
-            if term in para.text:
-                for run in para.runs:
-                    if term in run.text:
-                        run.font.highlight_color = WD_COLOR_INDEX.YELLOW
+            # Lakukan pencarian case-insensitive (tidak membedakan huruf besar/kecil)
+            if term.lower() in para.text.lower():
+                # Jika kata ditemukan, kita akan membangun ulang paragraf ini
+                full_text = para.text
+                
+                # Simpan gaya (font, ukuran, dll.) dari run pertama sebagai dasar
+                # Catatan: Ini akan membuat seluruh paragraf memiliki gaya yang sama
+                original_style_run = para.runs[0] if para.runs else None
+                
+                # Kosongkan paragraf yang ada
+                para.clear()
+
+                # Gunakan regex untuk memecah teks berdasarkan kata yang salah, sambil mempertahankannya
+                # Ini akan menemukan semua kemunculan kata, tidak peduli besar kecilnya huruf
+                parts = re.split(f'({re.escape(term)})', full_text, flags=re.IGNORECASE)
+
+                for part in parts:
+                    if part: # Pastikan bagian tidak kosong
+                        # Jika bagian ini sama dengan kata yang kita cari (case-insensitive)
+                        if part.lower() == term.lower():
+                            run = para.add_run(part)
+                            # Beri highlight
+                            run.font.highlight_color = WD_COLOR_INDEX.YELLOW
+                        else:
+                            # Jika tidak, tambahkan sebagai teks biasa
+                            run = para.add_run(part)
+                        
+                        # Terapkan kembali gaya dasar ke setiap run baru
+                        if original_style_run:
+                            run.font.name = original_style_run.font.name
+                            run.font.size = original_style_run.font.size
+                            run.bold = original_style_run.bold
+                            run.italic = original_style_run.italic
+
     output_buffer = io.BytesIO()
     doc.save(output_buffer)
     return output_buffer.getvalue()
@@ -509,3 +544,4 @@ if 'coherence_results' in st.session_state:
         }, inplace=True)
 
         st.dataframe(df_coherence, use_container_width=True)
+
