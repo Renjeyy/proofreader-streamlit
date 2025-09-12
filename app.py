@@ -180,7 +180,7 @@ def create_zip_archive(revised_data, highlighted_data, original_filename):
 
 # --- ANTARMUKA STREAMLIT UNTUK BAGIAN 1 ---
 uploaded_file = st.file_uploader(
-    "Unggah dokumen (PDF/DOCX)",
+    "Unggah dokumen (DOCX)",
     type=['docx'],
     help="File yang diunggah akan dianalisis untuk menemukan kesalahan ejaan dan ketik."
 )
@@ -430,9 +430,82 @@ if 'comparison_results' in st.session_state and not st.session_state.comparison_
 elif 'comparison_results' in st.session_state:
      st.info("Tidak ditemukan perbedaan signifikan antar paragraf di kedua dokumen.")
 
-#Bagian 3 yang Anomali Detection
+# --- BAGIAN 3: ANALISIS KOHERENSI DOKUMEN ---
 st.divider()
-st.header("3. Pengecekan Struktur Dokumen")
+st.header("3. Analisis Koherensi Dokumen")
 
+def analyze_document_coherence(full_text):
+    """Mengirim teks ke AI untuk dianalisis koherensinya dan memberikan saran."""
+    if not full_text or full_text.isspace():
+        return []
 
+    prompt = f"""
+    Anda adalah seorang editor ahli yang bertugas menganalisis struktur dan koherensi sebuah tulisan.
+    Tugas Anda adalah membaca keseluruhan teks berikut dan mengidentifikasi setiap kalimat atau paragraf yang tidak koheren atau keluar dari topik utama di dalam sebuah sub-bagian.
+    
+    Untuk setiap ketidaksesuaian yang Anda temukan, lakukan hal berikut:
+    1. Bacalah mengenai judul dari section atau subsection yang ada pada file tersebut
+    2. Tentukan topik utama dari paragraf atau bagian tempat kalimat itu berada.
+    3. Identifikasi kalimat asli yang menyimpang dari topik tersebut.
+    4. Bila ada kalimat yang sekiranya memyimpang, Berikan saran dengan menghighlight kalimat tersebut untuk diulis ulang kalimat tersebut agar relevan dan menyatu kembali dengan topik utamanya, sambil berusaha mempertahankan maksud aslinya jika memungkinkan.
 
+    Berikan hasil dalam format yang SANGAT KETAT seperti di bawah ini. Ulangi format ini untuk setiap kalimat menyimpang yang Anda temukan:
+    [TOPIK UTAMA] topik utama dari bagian tersebut -> [TEKS ASLI] kalimat asli yang tidak koheren -> [SARAN REVISI] versi kalimat yang sudah diperbaiki agar koheren
+
+    Contoh:
+    [TOPIK UTAMA] Sistem Whistleblowing Perusahaan -> [TEKS ASLI] Selain itu, audit internal juga memeriksa laporan keuangan setiap kuartal. -> [SARAN REVISI] Sistem whistleblowing ini terintegrasi dengan audit internal untuk menindaklanjuti laporan yang masuk, terutama yang berkaitan dengan anomali keuangan.
+
+    Jika seluruh dokumen sudah koheren dan tidak ada masalah, kembalikan teks: "TIDAK ADA MASALAH KOHERENSI"
+
+    Berikut adalah teks yang harus dianalisis:
+    ---
+    {full_text}
+    """
+    try:
+        response = model.generate_content(prompt)
+        pattern = re.compile(r"\[TOPIK UTAMA\]\s*(.*?)\s*->\s*\[TEKS ASLI\]\s*(.*?)\s*->\s*\[SARAN REVISI\]\s*(.*?)\s*(\n|$)", re.IGNORECASE)
+        found_issues = pattern.findall(response.text)
+        return [{"topik": topik.strip(), "asli": asli.strip(), "saran": saran.strip()} for topik, asli, saran, _ in found_issues]
+    except Exception as e:
+        st.error(f"Terjadi kesalahan saat menghubungi AI: {e}")
+        return []
+
+# Antarmuka Streamlit untuk Bagian 3
+coherence_file = st.file_uploader(
+    "Unggah dokumen untuk dianalisis koherensinya",
+    type=['docx'],
+    key="coherence_doc"
+)
+
+if coherence_file is not None:
+    if st.button("Analisis Koherensi", use_container_width=True, type="primary"):
+        with st.spinner("Membaca dan menganalisis struktur dokumen..."):
+            # Kita gunakan fungsi extract_text_with_pages yang sudah ada
+            document_pages = extract_text_with_pages(coherence_file)
+            if document_pages:
+                # Gabungkan semua teks dari halaman menjadi satu
+                full_document_text = "\n".join([page['teks'] for page in document_pages])
+                
+                # Panggil fungsi analisis yang baru
+                coherence_issues = analyze_document_coherence(full_document_text)
+
+                # Simpan hasilnya ke session state
+                st.session_state.coherence_results = coherence_issues
+
+# Menampilkan hasil jika ada di session state
+if 'coherence_results' in st.session_state:
+    results = st.session_state.coherence_results
+    if not results:
+        st.success("Analisis selesai. Tidak ditemukan masalah koherensi yang signifikan dalam dokumen.")
+    else:
+        st.warning(f"Analisis selesai. Ditemukan {len(results)} potensi masalah koherensi.")
+        
+        # Mengubah nama kolom untuk tampilan yang lebih baik
+        df_coherence = pd.DataFrame(results)
+        df_coherence.rename(columns={
+            'topik': 'Topik Utama Seharusnya',
+            'asli': 'Teks Asli (Tidak Koheren)',
+            'saran': 'Saran Revisi (Koheren)'
+        }, inplace=True)
+
+        st.dataframe(df_coherence, use_container_width=True)
