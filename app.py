@@ -434,17 +434,5 @@ elif 'comparison_results' in st.session_state:
 st.divider()
 st.header("3. Pengecekan Struktur Dokumen")
 
-import difflib
-from docx import Document
-from docx.shared import Pt, Inches
-
-uploaded_file = st.file_uploader(
-    "Unggah dokumen (PDF/DOCX)",
-    type=['docx'],
-    help="File yang diunggah akan dianalisis untuk menemukan kesalahan ejaan dan ketik."
-)
-
-if uploaded_file is not None:
-    st.info(f"File yang diunggah: **{uploaded_file.name}**")
 
 
