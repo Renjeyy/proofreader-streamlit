@@ -24,7 +24,7 @@ except Exception:
 st.markdown("<h1 style='text-align: center;'>Website Proofreader COE Divisi SKAI IFG</h1>", unsafe_allow_html=True)
 st.markdown(
     """
-    <div style="border: 3px solid #ddd; border-radius: 5px; padding: 15px; margin-bottom: 20px;">
+    <div style="border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin-bottom: 20px;">
         <p style="color:red; font-weight:bold; text-align:center; font-size: 1.1em;">
             Sebelum Menggunakan Fitur di Bawah Ini
         </p>
@@ -693,6 +693,7 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
 
