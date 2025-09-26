@@ -557,59 +557,63 @@ def get_structural_recommendations(full_text):
         return []
 
     prompt = f"""
-    Anda adalah seorang editor struktural ahli. Tugas Anda adalah menganalisis draf dokumen berikut untuk menemukan paragraf yang tidak koheren atau "tersesat" (tidak sesuai dengan topik utama sub-babnya).
+    Anda adalah seorang editor struktural ahli. Tugas Anda adalah menganalisis draf dokumen berikut untuk menemukan paragraf yang "tersesat" (tidak sesuai dengan topik utama sub-babnya).
 
     Untuk setiap paragraf yang tersesat, Anda harus:
     1.  Bacalah semua dokumennya terlebih dahulu sebelum Anda membuat revisi
-    1.  Pada saat Anda baca dokumennya, tolong Identifikasi teks lengkap dari paragraf yang tidak pada tempatnya.
-    2.  Tentukan di bab atau sub-bab mana paragraf itu berada saat ini (lokasi asli).
-    3.  Berikan rekomendasi di bab atau sub-bab mana paragraf tersebut seharusnya diletakkan agar lebih koheren dan masuk akal.
+    2.  Pada saat Anda baca dokumennya, tolong Identifikasi teks lengkap dari paragraf yang tidak pada tempatnya.
+    3.  Tentukan di bab atau sub-bab mana paragraf itu berada saat ini (lokasi asli).
+    4.  Berikan rekomendasi di bab atau sub-bab mana paragraf tersebut seharusnya diletakkan agar lebih koheren dan masuk akal.
 
-    Berikan hasil dalam format JSON yang berisi sebuah list. Setiap objek dalam list harus memiliki tiga kunci: "original_location", "misplaced_paragraph", dan "recommended_location".
+    Berikan hasil dalam format JSON yang berisi sebuah list. Setiap objek harus memiliki tiga kunci: "misplaced_paragraph", "original_section", dan "recommended_section".
 
     Contoh Format JSON:
     [
       {{
-        "original_location": "Bab 2.1: Prosedur Whistleblowing",
-        "misplaced_paragraph": "Selain itu, audit internal juga bertugas memeriksa laporan keuangan setiap kuartal untuk memastikan tidak ada anomali.",
-        "recommended_location": "Bab 4.2: Peran Audit Internal dalam Pengawasan Keuangan"
-      }},
-      {{
-        "original_location": "Bab 1: Pendahuluan",
-        "misplaced_paragraph": "Proses rekrutmen karyawan baru akan dimulai bulan depan dengan membuka lowongan di berbagai platform.",
-        "recommended_location": "Bab 5: Sumber Daya Manusia dan Rekrutmen"
+        "misplaced_paragraph": "Selain itu, audit internal juga bertugas memeriksa laporan keuangan setiap kuartal...",
+        "original_section": "Bab 2.1: Prosedur Whistleblowing",
+        "recommended_section": "Bab 4.2: Peran Audit Internal"
       }}
     ]
+    Jika dokumen sudah bagus, kembalikan list kosong: []
 
-    Jika seluruh dokumen sudah terstruktur dengan baik, kembalikan list kosong: []
-
-    Berikut adalah teks dokumen yang harus dianalisis:
+    Teks Dokumen:
     ---
     {full_text}
     """
     try:
         response = model.generate_content(prompt)
         cleaned_response = re.sub(r'```json\s*|\s*```', '', response.text.strip())
-        
         import json
-        recommendations = json.loads(cleaned_response)
-        return recommendations
+        return json.loads(cleaned_response)
     except Exception as e:
-        st.error(f"Gagal memproses atau mem-parsing respons dari AI: {e}")
+        st.error(f"Gagal memproses respons dari AI: {e}")
         return []
 
-def create_recommendation_excel(df):
-    """Membuat file Excel dari DataFrame hasil rekomendasi."""
+def find_page_for_text(search_text, document_pages):
+    """Mencari nomor halaman untuk sebuah teks spesifik di dalam dokumen PDF."""
+    # Ambil 50 karakter pertama untuk pencocokan, agar lebih efisien
+    snippet = search_text.strip()[:50]
+    for page_info in document_pages:
+        if snippet in page_info["teks"]:
+            return page_info["halaman"]
+    return "Tidak ditemukan"
+
+def create_recommendation_highlight_docx(file_bytes, recommendations):
+    doc = docx.Document(io.BytesIO(file_bytes))
+    
+    # Ambil teks dari paragraf yang perlu di-highlight
+    misplaced_paragraphs = [rec.get("Paragraf yang Perlu Dipindah") for rec in recommendations]
+
+    for para in doc.paragraphs:
+        # Cek jika teks paragraf (setelah dibersihkan) ada di dalam daftar yang perlu di-highlight
+        if para.text.strip() in [p.strip() for p in misplaced_paragraphs]:
+            # Beri highlight kuning pada setiap bagian (run) dari paragraf tersebut
+            for run in para.runs:
+                run.font.highlight_color = WD_COLOR_INDEX.YELLOW
+
     output_buffer = io.BytesIO()
-    with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False, sheet_name='Rekomendasi Struktur')
-        
-        # Mengatur lebar kolom agar mudah dibaca
-        worksheet = writer.sheets['Rekomendasi Struktur']
-        for i, col in enumerate(df.columns):
-            column_len = max(df[col].astype(str).map(len).max(), len(col)) + 2
-            worksheet.set_column(i, i, column_len)
-            
+    doc.save(output_buffer)
     return output_buffer.getvalue()
 
 # --- Antarmuka Streamlit untuk Bagian 3 ---
@@ -627,39 +631,57 @@ if recommendation_file is not None:
                 full_text = "\n".join([page['teks'] for page in document_pages])
                 recommendations = get_structural_recommendations(full_text)
                 
-                # Simpan hasilnya ke session state
-                st.session_state.recommendations = recommendations
+                # Proses hasil untuk ditambahkan nomor halaman jika file adalah PDF
+                processed_results = []
+                is_pdf = recommendation_file.name.endswith('.pdf')
+                
+                for rec in recommendations:
+                    para = rec.get("misplaced_paragraph")
+                    original_sec = rec.get("original_section")
+                    recommended_sec = rec.get("recommended_section")
 
-# Menampilkan hasil dan tombol download jika ada
+                    if is_pdf:
+                        original_page = find_page_for_text(para, document_pages)
+                        recommended_page = find_page_for_text(recommended_sec, document_pages)
+                    else:
+                        original_page = "N/A (DOCX)"
+                        recommended_page = "N/A (DOCX)"
+
+                    processed_results.append({
+                        "Paragraf yang Perlu Dipindah": para,
+                        "Lokasi Asli": f"{original_sec} (Hal. {original_page})",
+                        "Saran Lokasi Baru": f"{recommended_sec} (Hal. {recommended_page})"
+                    })
+                
+                st.session_state.recommendations = processed_results
+
+# Menampilkan hasil jika ada di session state
 if 'recommendations' in st.session_state:
     results = st.session_state.recommendations
     
     if not results:
-        st.success("Analisis selesai. Struktur dokumen Anda sudah koheren dan tidak ditemukan paragraf yang perlu dipindahkan.")
+        st.success("Analisis selesai. Struktur dokumen Anda sudah koheren.")
     else:
         st.warning(f"Analisis selesai. Ditemukan {len(results)} paragraf yang disarankan untuk dipindahkan.")
         
         df_recommendations = pd.DataFrame(results)
-        
-        # Mengubah nama kolom untuk tampilan yang lebih baik
-        df_recommendations.rename(columns={
-            'original_location': 'Lokasi Asli Paragraf',
-            'misplaced_paragraph': 'Paragraf yang Perlu Dipindah',
-            'recommended_location': 'Saran Lokasi Baru'
-        }, inplace=True)
-        
         st.dataframe(df_recommendations, use_container_width=True)
         
-        # Membuat file Excel untuk diunduh
-        excel_data = create_recommendation_excel(df_recommendations)
-        
-        st.download_button(
-            label="Unduh Laporan Rekomendasi (.xlsx)",
-            data=excel_data,
-            file_name=f"rekomendasi_struktur_{recommendation_file.name.split('.')[0]}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            use_container_width=True
-        )
+        # --- LOGIKA BARU UNTUK TOMBOL DOWNLOAD DOCX ---
+        # Tombol ini hanya akan muncul jika file yang diunggah adalah .docx
+        if recommendation_file and recommendation_file.name.endswith('.docx'):
+            
+            # Membuat file DOCX yang sudah di-highlight
+            highlighted_docx_data = create_recommendation_highlight_docx(recommendation_file.getvalue(), results)
+            
+            st.download_button(
+                label="Unduh Dokumen dengan Highlight (.docx)",
+                data=highlighted_docx_data,
+                file_name=f"highlight_rekomendasi_{recommendation_file.name}",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True
+            )
+
 
 
 
