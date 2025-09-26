@@ -26,7 +26,7 @@ st.markdown("<h1 style='text-align: center;'>Website Proofreader COE Divisi SKAI
 
 # --- BAGIAN 1: PROOFREAD ---
 st.divider() # Garis pemisah
-st.header("1. Proofread Dokumen")
+st.markdown('### 1. Proofread Dokumen <b style="color:green;">(AVAILABLE)</b>', unsafe_allow_html=True)
 
 # --- Inisialisasi Session State ---
 if 'analysis_results' not in st.session_state:
@@ -300,7 +300,7 @@ if st.session_state.analysis_results is not None:
 
 
 st.divider()
-st.header("2. Bandingkan Dokumen")
+st.markdown('### 2. Bandingkan Dokumen <b style="color:green;">(AVAILABLE)</b>', unsafe_allow_html=True)
 
 # Tambahan import yang mungkin diperlukan untuk bagian ini
 import difflib
@@ -660,5 +660,6 @@ if 'recommendations' in st.session_state:
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True
         )
+
 
 
