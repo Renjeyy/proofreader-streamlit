@@ -551,177 +551,115 @@ if 'coherence_results' in st.session_state:
 st.divider()
 st.header("4. Restrukturisasi Koherensi Dokumen")
 
-def restructure_document_with_ai(full_text):
+def get_structural_recommendations(full_text):
+    """Meminta AI untuk menganalisis dan memberikan saran pemindahan paragraf."""
     if not full_text or full_text.isspace():
-        return None, "Teks input kosong."
+        return []
 
     prompt = f"""
-    Anda adalah seorang auditor struktural profesional dengan tugas untuk merestrukturisasi draf dokumen berikut agar setiap bagian dan sub-bagian memiliki koherensi topik yang sempurna.
+    Anda adalah seorang editor struktural ahli. Tugas Anda adalah menganalisis draf dokumen berikut untuk menemukan paragraf yang tidak koheren atau "tersesat" (tidak sesuai dengan topik utama sub-babnya).
 
-    Tugas Anda:
-    1.  Baca dan pahami keseluruhan teks untuk mengidentifikasi struktur bab dan sub-bab beserta topik utamanya.
-    2.  Identifikasi setiap paragraf yang lokasinya tidak sesuai dengan topik utama bab/sub-bab tempat ia berada (paragraf "tersesat").
-    3.  Pindahkan paragraf "tersesat" tersebut ke bab/sub-bab yang topiknya paling sesuai.
-    4.  Susun ulang keseluruhan dokumen berdasarkan struktur baru yang sudah koheren. JANGAN mengubah isi paragraf ataupun poin pentingnya, hanya pindahkan posisinya.
+    Untuk setiap paragraf yang tersesat, Anda harus:
+    1.  Bacalah semua dokumennya terlebih dahulu sebelum Anda membuat revisi
+    1.  Pada saat Anda baca dokumennya, tolong Identifikasi teks lengkap dari paragraf yang tidak pada tempatnya.
+    2.  Tentukan di bab atau sub-bab mana paragraf itu berada saat ini (lokasi asli).
+    3.  Berikan rekomendasi di bab atau sub-bab mana paragraf tersebut seharusnya diletakkan agar lebih koheren dan masuk akal.
 
-    Berikan output dalam format JSON yang ketat dengan dua kunci utama: "summary_of_changes" dan "restructured_content".
-
-    -   "summary_of_changes": Berikan ringkasan dalam bentuk list string tentang paragraf mana yang Anda pindahkan dan ke mana.
-    -   "restructured_content": Berikan list of objects, di mana setiap object mewakili satu bab/sub-bab dengan kunci "section_title" dan "content" (sebuah list string dari paragraf-paragraf di dalamnya).
+    Berikan hasil dalam format JSON yang berisi sebuah list. Setiap objek dalam list harus memiliki tiga kunci: "original_location", "misplaced_paragraph", dan "recommended_location".
 
     Contoh Format JSON:
-    {{
-      "summary_of_changes": [
-        "Memindahkan paragraf tentang 'dampak keuangan' dari Bab 2 ke Bab 4.1.",
-        "Memindahkan paragraf tentang 'prosedur audit' dari Bab 1 ke Bab 3.2."
-      ],
-      "restructured_content": [
-        {{
-          "section_title": "BAB 1: PENDAHULUAN",
-          "content": [
-            "Paragraf pertama pendahuluan...",
-            "Paragraf kedua pendahuluan..."
-          ]
-        }},
-        {{
-          "section_title": "BAB 2: SISTEM WHISTLEBLOWING",
-          "content": [
-            "Paragraf pertama tentang whistleblowing...",
-            "Paragraf kedua tentang whistleblowing..."
-          ]
-        }}
-      ]
-    }}
+    [
+      {{
+        "original_location": "Bab 2.1: Prosedur Whistleblowing",
+        "misplaced_paragraph": "Selain itu, audit internal juga bertugas memeriksa laporan keuangan setiap kuartal untuk memastikan tidak ada anomali.",
+        "recommended_location": "Bab 4.2: Peran Audit Internal dalam Pengawasan Keuangan"
+      }},
+      {{
+        "original_location": "Bab 1: Pendahuluan",
+        "misplaced_paragraph": "Proses rekrutmen karyawan baru akan dimulai bulan depan dengan membuka lowongan di berbagai platform.",
+        "recommended_location": "Bab 5: Sumber Daya Manusia dan Rekrutmen"
+      }}
+    ]
 
-    Berikut adalah teks dokumen yang harus direstrukturisasi:
+    Jika seluruh dokumen sudah terstruktur dengan baik, kembalikan list kosong: []
+
+    Berikut adalah teks dokumen yang harus dianalisis:
     ---
     {full_text}
     """
     try:
         response = model.generate_content(prompt)
-        # Membersihkan output AI dari markdown ```json ... ```
         cleaned_response = re.sub(r'```json\s*|\s*```', '', response.text.strip())
         
-        # Parsing JSON
         import json
-        data = json.loads(cleaned_response)
-        summary = data.get("summary_of_changes", [])
-        content = data.get("restructured_content", [])
-        return summary, content
+        recommendations = json.loads(cleaned_response)
+        return recommendations
     except Exception as e:
         st.error(f"Gagal memproses atau mem-parsing respons dari AI: {e}")
-        return None, None
+        return []
 
-def create_restructured_docx(summary, content_list):
-    """Menciptakan file .docx baru dari hasil restrukturisasi AI."""
-    doc = Document()
-    doc.add_heading('Dokumen Hasil Restrukturisasi Koherensi', level=0)
-    
-    # Menambahkan ringkasan perubahan di awal dokumen
-    doc.add_heading('Ringkasan Perubahan Struktural', level=1)
-    if summary:
-        for change in summary:
-            doc.add_paragraph(change, style='List Bullet')
-    else:
-        doc.add_paragraph("Tidak ada perubahan struktural yang dilakukan.")
-    
-    doc.add_page_break()
-
-    # Menambahkan konten yang sudah direstrukturisasi
-    for section in content_list:
-        title = section.get("section_title", "Tanpa Judul")
-        content = section.get("content", [])
-        doc.add_heading(title, level=1)
-        for para in content:
-            doc.add_paragraph(para)
-            
+def create_recommendation_excel(df):
+    """Membuat file Excel dari DataFrame hasil rekomendasi."""
     output_buffer = io.BytesIO()
-    doc.save(output_buffer)
+    with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Rekomendasi Struktur')
+        
+        # Mengatur lebar kolom agar mudah dibaca
+        worksheet = writer.sheets['Rekomendasi Struktur']
+        for i, col in enumerate(df.columns):
+            column_len = max(df[col].astype(str).map(len).max(), len(col)) + 2
+            worksheet.set_column(i, i, column_len)
+            
     return output_buffer.getvalue()
 
-# Antarmuka Streamlit untuk Bagian 3
-uploaded_file = st.file_uploader(
-    "Unggah dokumen (PDF/DOCX) untuk dianalisis",
+# --- Antarmuka Streamlit untuk Bagian 3 ---
+recommendation_file = st.file_uploader(
+    "Unggah dokumen untuk mendapatkan saran restrukturisasi",
     type=['pdf', 'docx'],
-    key="main_uploader"
+    key="recommendation_doc"
 )
 
-if uploaded_file is not None:
-    if st.button("Mulai Analisis Lengkap (Proofread & Restrukturisasi)", use_container_width=True, type="primary"):
-        with st.spinner("Menjalankan analisis ganda... Ini mungkin memakan waktu beberapa saat."):
-            document_pages = extract_text_with_pages(uploaded_file)
+if recommendation_file is not None:
+    if st.button("Dapatkan Rekomendasi Struktur", use_container_width=True, type="primary"):
+        with st.spinner("Menganalisis keseluruhan struktur dokumen..."):
+            document_pages = extract_text_with_pages(recommendation_file)
             if document_pages:
                 full_text = "\n".join([page['teks'] for page in document_pages])
+                recommendations = get_structural_recommendations(full_text)
                 
-                # --- MENJALANKAN KEDUA ANALISIS ---
-                st.session_state.proofread_results = proofread_with_gemini(full_text)
-                summary, content = restructure_document_with_ai(full_text)
-                
-                # Simpan semua hasil ke session state
-                st.session_state.restructured_summary = summary
-                st.session_state.restructured_content = content
-                st.session_state.analysis_done = True
+                # Simpan hasilnya ke session state
+                st.session_state.recommendations = recommendations
 
-# --- BAGIAN UNTUK MENAMPILKAN SEMUA HASIL ---
-if st.session_state.get('analysis_done', False):
-    st.divider()
-    st.header("Hasil Analisis Dokumen")
-
-    # --- 1. Tampilkan Hasil Proofread ---
-    st.subheader("1. Hasil Proofread (Ejaan & Tata Bahasa)")
-    proofread_errors = st.session_state.proofread_results
-    if not proofread_errors:
-        st.success("Tidak ditemukan kesalahan ejaan atau tata bahasa.")
-    else:
-        st.warning(f"Ditemukan {len(proofread_errors)} potensi kesalahan ejaan/tata bahasa.")
-        df_errors = pd.DataFrame(proofread_errors)
-        st.dataframe(df_errors)
-
-    # --- 2. Tampilkan Hasil Analisis Struktur ---
-    st.subheader("2. Hasil Analisis Struktur")
-    summary = st.session_state.restructured_summary
-    if not summary:
-        st.success("Struktur dokumen Anda sudah koheren, tidak ada saran pemindahan.")
-    else:
-        st.warning("Ditemukan saran untuk merestrukturisasi dokumen Anda.")
-        st.markdown("##### Ringkasan Perubahan Struktural:")
-        for change in summary:
-            st.markdown(f"- {change}")
-
-    # --- BAGIAN UNDUH ---
-    st.divider()
-    st.subheader("Unduh Hasil")
+# Menampilkan hasil dan tombol download jika ada
+if 'recommendations' in st.session_state:
+    results = st.session_state.recommendations
     
-    # Siapkan data untuk diunduh
-    revised_docx_data = generate_revised_docx(uploaded_file.getvalue(), st.session_state.proofread_results)
-    restructured_docx_data = create_restructured_docx(st.session_state.restructured_summary, st.session_state.restructured_content)
-    
-    col1, col2 = st.columns(2)
-    with col1:
+    if not results:
+        st.success("Analisis selesai. Struktur dokumen Anda sudah koheren dan tidak ditemukan paragraf yang perlu dipindahkan.")
+    else:
+        st.warning(f"Analisis selesai. Ditemukan {len(results)} paragraf yang disarankan untuk dipindahkan.")
+        
+        df_recommendations = pd.DataFrame(results)
+        
+        # Mengubah nama kolom untuk tampilan yang lebih baik
+        df_recommendations.rename(columns={
+            'original_location': 'Lokasi Asli Paragraf',
+            'misplaced_paragraph': 'Paragraf yang Perlu Dipindah',
+            'recommended_location': 'Saran Lokasi Baru'
+        }, inplace=True)
+        
+        st.dataframe(df_recommendations, use_container_width=True)
+        
+        # Membuat file Excel untuk diunduh
+        excel_data = create_recommendation_excel(df_recommendations)
+        
         st.download_button(
-            label="📄 Unduh Hasil Revisi (Proofread)",
-            data=revised_docx_data,
-            file_name=f"revisi_proofread_{uploaded_file.name}",
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            use_container_width=True
-        )
-    with col2:
-        st.download_button(
-            label="📑 Unduh Hasil Restrukturisasi",
-            data=restructured_docx_data,
-            file_name=f"hasil_restrukturisasi_{uploaded_file.name}",
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            label="Unduh Laporan Rekomendasi (.xlsx)",
+            data=excel_data,
+            file_name=f"rekomendasi_struktur_{recommendation_file.name.split('.')[0]}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True
         )
 
-    # Tombol Unduh ZIP
-    zip_data = create_zip_archive(revised_docx_data, restructured_docx_data, uploaded_file.name)
-    st.download_button(
-        label="📥 Unduh Semua Hasil (.zip)",
-        data=zip_data,
-        file_name=f"hasil_lengkap_{uploaded_file.name.split('.')[0]}.zip",
-        mime="application/zip",
-        use_container_width=True
-    )
 
 
