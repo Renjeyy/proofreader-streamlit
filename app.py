@@ -628,7 +628,6 @@ def create_recommendation_highlight_docx(file_bytes, recommendations):
     doc.save(output_buffer)
     return output_buffer.getvalue()
 
-# --- Antarmuka Streamlit untuk Bagian 3 ---
 recommendation_file = st.file_uploader(
     "Unggah dokumen untuk mendapatkan saran restrukturisasi",
     type=['pdf', 'docx'],
@@ -642,8 +641,7 @@ if recommendation_file is not None:
             if document_pages:
                 full_text = "\n".join([page['teks'] for page in document_pages])
                 recommendations = get_structural_recommendations(full_text)
-                
-                # Proses hasil untuk ditambahkan nomor halaman jika file adalah PDF
+
                 processed_results = []
                 is_pdf = recommendation_file.name.endswith('.pdf')
                 
@@ -667,7 +665,6 @@ if recommendation_file is not None:
                 
                 st.session_state.recommendations = processed_results
 
-# Menampilkan hasil jika ada di session state
 if 'recommendations' in st.session_state:
     results = st.session_state.recommendations
     
@@ -679,8 +676,6 @@ if 'recommendations' in st.session_state:
         df_recommendations = pd.DataFrame(results)
         st.dataframe(df_recommendations, use_container_width=True)
         
-        # --- LOGIKA BARU UNTUK TOMBOL DOWNLOAD DOCX ---
-        # Tombol ini hanya akan muncul jika file yang diunggah adalah .docx
         if recommendation_file and recommendation_file.name.endswith('.docx'):
             
             # Membuat file DOCX yang sudah di-highlight
@@ -693,4 +688,3 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
-
