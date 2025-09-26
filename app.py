@@ -36,7 +36,7 @@ if 'analysis_results' not in st.session_state:
 try:
     api_key = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-2.0-flash-latest')
+    model = genai.GenerativeModel('gemini-1.5-pro-latest')
 except KeyError:
     st.error("Google API Key belum diatur. Harap atur di Streamlit Secrets.")
     st.stop()
@@ -723,4 +723,5 @@ if st.session_state.get('analysis_done', False):
         mime="application/zip",
         use_container_width=True
     )
+
 
