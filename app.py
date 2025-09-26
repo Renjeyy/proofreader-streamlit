@@ -548,13 +548,178 @@ if 'coherence_results' in st.session_state:
 
         st.dataframe(df_coherence, use_container_width=True)
 
+st.divider()
+st.header("4. Restrukturisasi Koherensi Dokumen")
 
+def restructure_document_with_ai(full_text):
+    if not full_text or full_text.isspace():
+        return None, "Teks input kosong."
 
+    prompt = f"""
+    Anda adalah seorang auditor struktural profesional dengan tugas untuk merestrukturisasi draf dokumen berikut agar setiap bagian dan sub-bagian memiliki koherensi topik yang sempurna.
 
+    Tugas Anda:
+    1.  Baca dan pahami keseluruhan teks untuk mengidentifikasi struktur bab dan sub-bab beserta topik utamanya.
+    2.  Identifikasi setiap paragraf yang lokasinya tidak sesuai dengan topik utama bab/sub-bab tempat ia berada (paragraf "tersesat").
+    3.  Pindahkan paragraf "tersesat" tersebut ke bab/sub-bab yang topiknya paling sesuai.
+    4.  Susun ulang keseluruhan dokumen berdasarkan struktur baru yang sudah koheren. JANGAN mengubah isi paragraf ataupun poin pentingnya, hanya pindahkan posisinya.
 
+    Berikan output dalam format JSON yang ketat dengan dua kunci utama: "summary_of_changes" dan "restructured_content".
 
+    -   "summary_of_changes": Berikan ringkasan dalam bentuk list string tentang paragraf mana yang Anda pindahkan dan ke mana.
+    -   "restructured_content": Berikan list of objects, di mana setiap object mewakili satu bab/sub-bab dengan kunci "section_title" dan "content" (sebuah list string dari paragraf-paragraf di dalamnya).
 
+    Contoh Format JSON:
+    {{
+      "summary_of_changes": [
+        "Memindahkan paragraf tentang 'dampak keuangan' dari Bab 2 ke Bab 4.1.",
+        "Memindahkan paragraf tentang 'prosedur audit' dari Bab 1 ke Bab 3.2."
+      ],
+      "restructured_content": [
+        {{
+          "section_title": "BAB 1: PENDAHULUAN",
+          "content": [
+            "Paragraf pertama pendahuluan...",
+            "Paragraf kedua pendahuluan..."
+          ]
+        }},
+        {{
+          "section_title": "BAB 2: SISTEM WHISTLEBLOWING",
+          "content": [
+            "Paragraf pertama tentang whistleblowing...",
+            "Paragraf kedua tentang whistleblowing..."
+          ]
+        }}
+      ]
+    }}
 
+    Berikut adalah teks dokumen yang harus direstrukturisasi:
+    ---
+    {full_text}
+    """
+    try:
+        response = model.generate_content(prompt)
+        # Membersihkan output AI dari markdown ```json ... ```
+        cleaned_response = re.sub(r'```json\s*|\s*```', '', response.text.strip())
+        
+        # Parsing JSON
+        import json
+        data = json.loads(cleaned_response)
+        summary = data.get("summary_of_changes", [])
+        content = data.get("restructured_content", [])
+        return summary, content
+    except Exception as e:
+        st.error(f"Gagal memproses atau mem-parsing respons dari AI: {e}")
+        return None, None
 
+def create_restructured_docx(summary, content_list):
+    """Menciptakan file .docx baru dari hasil restrukturisasi AI."""
+    doc = Document()
+    doc.add_heading('Dokumen Hasil Restrukturisasi Koherensi', level=0)
+    
+    # Menambahkan ringkasan perubahan di awal dokumen
+    doc.add_heading('Ringkasan Perubahan Struktural', level=1)
+    if summary:
+        for change in summary:
+            doc.add_paragraph(change, style='List Bullet')
+    else:
+        doc.add_paragraph("Tidak ada perubahan struktural yang dilakukan.")
+    
+    doc.add_page_break()
 
+    # Menambahkan konten yang sudah direstrukturisasi
+    for section in content_list:
+        title = section.get("section_title", "Tanpa Judul")
+        content = section.get("content", [])
+        doc.add_heading(title, level=1)
+        for para in content:
+            doc.add_paragraph(para)
+            
+    output_buffer = io.BytesIO()
+    doc.save(output_buffer)
+    return output_buffer.getvalue()
 
+# Antarmuka Streamlit untuk Bagian 3
+uploaded_file = st.file_uploader(
+    "Unggah dokumen (PDF/DOCX) untuk dianalisis",
+    type=['pdf', 'docx'],
+    key="main_uploader"
+)
+
+if uploaded_file is not None:
+    if st.button("Mulai Analisis Lengkap (Proofread & Restrukturisasi)", use_container_width=True, type="primary"):
+        with st.spinner("Menjalankan analisis ganda... Ini mungkin memakan waktu beberapa saat."):
+            document_pages = extract_text_with_pages(uploaded_file)
+            if document_pages:
+                full_text = "\n".join([page['teks'] for page in document_pages])
+                
+                # --- MENJALANKAN KEDUA ANALISIS ---
+                st.session_state.proofread_results = proofread_with_gemini(full_text)
+                summary, content = restructure_document_with_ai(full_text)
+                
+                # Simpan semua hasil ke session state
+                st.session_state.restructured_summary = summary
+                st.session_state.restructured_content = content
+                st.session_state.analysis_done = True
+
+# --- BAGIAN UNTUK MENAMPILKAN SEMUA HASIL ---
+if st.session_state.get('analysis_done', False):
+    st.divider()
+    st.header("Hasil Analisis Dokumen")
+
+    # --- 1. Tampilkan Hasil Proofread ---
+    st.subheader("1. Hasil Proofread (Ejaan & Tata Bahasa)")
+    proofread_errors = st.session_state.proofread_results
+    if not proofread_errors:
+        st.success("Tidak ditemukan kesalahan ejaan atau tata bahasa.")
+    else:
+        st.warning(f"Ditemukan {len(proofread_errors)} potensi kesalahan ejaan/tata bahasa.")
+        df_errors = pd.DataFrame(proofread_errors)
+        st.dataframe(df_errors)
+
+    # --- 2. Tampilkan Hasil Analisis Struktur ---
+    st.subheader("2. Hasil Analisis Struktur")
+    summary = st.session_state.restructured_summary
+    if not summary:
+        st.success("Struktur dokumen Anda sudah koheren, tidak ada saran pemindahan.")
+    else:
+        st.warning("Ditemukan saran untuk merestrukturisasi dokumen Anda.")
+        st.markdown("##### Ringkasan Perubahan Struktural:")
+        for change in summary:
+            st.markdown(f"- {change}")
+
+    # --- BAGIAN UNDUH ---
+    st.divider()
+    st.subheader("Unduh Hasil")
+    
+    # Siapkan data untuk diunduh
+    revised_docx_data = generate_revised_docx(uploaded_file.getvalue(), st.session_state.proofread_results)
+    restructured_docx_data = create_restructured_docx(st.session_state.restructured_summary, st.session_state.restructured_content)
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.download_button(
+            label="📄 Unduh Hasil Revisi (Proofread)",
+            data=revised_docx_data,
+            file_name=f"revisi_proofread_{uploaded_file.name}",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            use_container_width=True
+        )
+    with col2:
+        st.download_button(
+            label="📑 Unduh Hasil Restrukturisasi",
+            data=restructured_docx_data,
+            file_name=f"hasil_restrukturisasi_{uploaded_file.name}",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            use_container_width=True
+        )
+
+    # Tombol Unduh ZIP
+    zip_data = create_zip_archive(revised_docx_data, restructured_docx_data, uploaded_file.name)
+    st.download_button(
+        label="📥 Unduh Semua Hasil (.zip)",
+        data=zip_data,
+        file_name=f"hasil_lengkap_{uploaded_file.name.split('.')[0]}.zip",
+        mime="application/zip",
+        use_container_width=True
+    )
