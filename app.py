@@ -549,7 +549,7 @@ if 'coherence_results' in st.session_state:
         st.dataframe(df_coherence, use_container_width=True)
 
 st.divider()
-st.markdown('### 4. Restrukturisasi Koherensi Dokumen <b style="color:red;">(UNAVAILABLE)</b>', unsafe_allow_html=True)
+st.markdown('### 4. Restrukturisasi Koherensi Dokumen <b style="color:red;">(UNAVAILABLE DUE TO MODEL INSTABILITY)</b>', unsafe_allow_html=True)
 
 def get_structural_recommendations(full_text):
     """Meminta AI untuk menganalisis dan memberikan saran pemindahan paragraf."""
@@ -660,8 +660,3 @@ if 'recommendations' in st.session_state:
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True
         )
-
-
-
-
-
