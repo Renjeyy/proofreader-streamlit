@@ -470,7 +470,7 @@ elif 'comparison_results' in st.session_state:
 
 # --- BAGIAN 3: ANALISIS KOHERENSI DOKUMEN ---
 st.divider()
-st.header("3. Analisis Koherensi Dokumen")
+st.markdown('### 3. Analisis Koherensi Dokumen <b style="color:green;">(AVAILABLE BUT STILL ON DEVELOPMENT)</b>', unsafe_allow_html=True)
 
 def analyze_document_coherence(full_text):
     """Mengirim teks ke AI untuk dianalisis koherensinya dan memberikan saran."""
@@ -660,4 +660,5 @@ if 'recommendations' in st.session_state:
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True
         )
+
 
