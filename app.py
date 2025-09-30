@@ -595,7 +595,7 @@ if 'coherence_results' in st.session_state:
         docx_data = create_coherence_report_docx(df_coherence)
         
         st.download_button(
-            label="📄 Unduh Laporan Koherensi (.docx)",
+            label="Unduh Laporan Koherensi (.docx)",
             data=docx_data,
             file_name=f"laporan_koherensi_{coherence_file.name}",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -726,6 +726,7 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
 
