@@ -497,6 +497,7 @@ def analyze_document_coherence(full_text):
     2. Tentukan topik utama dari paragraf atau bagian tempat kalimat itu berada.
     3. Identifikasi kalimat asli yang menyimpang dari topik tersebut.
     4. Bila ada kalimat yang sekiranya memyimpang, Berikan saran dengan menghighlight kalimat tersebut untuk diulis ulang kalimat tersebut agar relevan dan menyatu kembali dengan topik utamanya, sambil berusaha mempertahankan maksud aslinya jika memungkinkan.
+    
 
     Berikan hasil dalam format yang SANGAT KETAT seperti di bawah ini. Ulangi format ini untuk setiap kalimat menyimpang yang Anda temukan:
     [TOPIK UTAMA] topik utama dari bagian tersebut -> [TEKS ASLI] kalimat asli yang tidak koheren -> [SARAN REVISI] versi kalimat yang sudah diperbaiki agar koheren
@@ -527,7 +528,7 @@ coherence_file = st.file_uploader(
 )
 
 if coherence_file is not None:
-    if st.button("Analisis Koherensi", use_container_width=True, type="primary"):
+    if st.button("Mulai Analisis", use_container_width=True, type="primary"):
         with st.spinner("Membaca dan menganalisis struktur dokumen..."):
             document_pages = extract_text_with_pages(coherence_file)
             if document_pages:
@@ -677,6 +678,7 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
 
