@@ -18,7 +18,7 @@ st.set_page_config(
 # --- Header Aplikasi ---
 try:
     # Ganti "Logo_IFG-removebg-preview.png" dengan nama file logo Anda
-    st.image("Logo_IFG-removebg-preview.png", width=250)
+    st.image("Logo_IFG-removebg-preview.png", width=225)
 except Exception:
     st.warning("Logo tidak ditemukan. Pastikan file logo ada di direktori yang sama.")
 st.markdown("<h1 style='text-align: center;'>Website Proofreader COE Divisi SKAI IFG</h1>", unsafe_allow_html=True)
@@ -680,6 +680,7 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
 
