@@ -479,8 +479,6 @@ if 'comparison_results' in st.session_state and not st.session_state.comparison_
 elif 'comparison_results' in st.session_state:
      st.info("Tidak ditemukan perbedaan signifikan antar paragraf di kedua dokumen.")
 
-st.warning("Harap lakukan analisis ulang jika muncul pesan bahwa tidak ada ejaan yang salah karena model bisa saja tidak berhasil mendeteksi.")
-
 # --- BAGIAN 3: ANALISIS KOHERENSI DOKUMEN ---
 st.divider()
 st.markdown('### 3. Analisis Koherensi Dokumen <b style="color:darkblue;">(Available but still on development)</b>', unsafe_allow_html=True)
@@ -679,6 +677,7 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
 
