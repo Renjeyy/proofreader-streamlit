@@ -230,7 +230,7 @@ def create_zip_archive(revised_data, highlighted_data, original_filename):
 
 # --- ANTARMUKA STREAMLIT UNTUK BAGIAN 1 ---
 uploaded_file = st.file_uploader(
-    "Unggah dokumen (DOCX)",
+    "Unggah dokumen yang ingin diproofread",
     type=['docx'],
     help="File yang diunggah akan dianalisis untuk menemukan kesalahan ejaan dan ketik."
 )
@@ -677,3 +677,4 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
