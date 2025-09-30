@@ -483,45 +483,6 @@ elif 'comparison_results' in st.session_state:
 st.divider()
 st.markdown('### 3. Analisis Koherensi Dokumen <b style="color:darkblue;">(Available but still on development)</b>', unsafe_allow_html=True)
 
-def create_coherence_report_docx(df):
-    """Membuat file DOCX dari DataFrame hasil analisis koherensi."""
-    doc = Document()
-    # Menambahkan Judul Utama Dokumen
-    title = doc.add_heading('Laporan Analisis Koherensi Dokumen', level=1)
-    for run in title.runs:
-        run.font.name = 'Arial'
-        run.font.size = Pt(12)
-        run.bold = True
-    doc.add_paragraph() # Spasi
-
-    # Menambahkan Tabel
-    table = doc.add_table(rows=1, cols=len(df.columns))
-    table.style = 'Table Grid'
-
-    # Menambahkan Header Tabel (Arial 11 Bold)
-    hdr_cells = table.rows[0].cells
-    for i, col_name in enumerate(df.columns):
-        p = hdr_cells[i].paragraphs[0]
-        p.text = col_name
-        for run in p.runs:
-            run.font.name = 'Arial'
-            run.font.bold = True
-            run.font.size = Pt(11)
-
-    # Menambahkan Isi Tabel (Arial 11)
-    for index, row in df.iterrows():
-        row_cells = table.add_row().cells
-        for i, cell_value in enumerate(row):
-            p = row_cells[i].paragraphs[0]
-            p.text = str(cell_value)
-            for run in p.runs:
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-
-    output_buffer = io.BytesIO()
-    doc.save(output_buffer)
-    return output_buffer.getvalue()
-
 def analyze_document_coherence(full_text):
     """Mengirim teks ke AI untuk dianalisis koherensinya dan memberikan saran."""
     if not full_text or full_text.isspace():
@@ -591,17 +552,7 @@ if 'coherence_results' in st.session_state:
         }, inplace=True)
 
         st.dataframe(df_coherence, use_container_width=True)
-
-        docx_data = create_coherence_report_docx(df_coherence)
         
-        st.download_button(
-            label="Unduh Laporan Koherensi (.docx)",
-            data=docx_data,
-            file_name=f"laporan_koherensi_{coherence_file.name}",
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            use_container_width=True
-        )
-
 st.divider()
 st.markdown('### 4. Restrukturisasi Koherensi Dokumen <b style="color:darkblue;">(Available but still on development)</b>', unsafe_allow_html=True)
 
@@ -726,6 +677,7 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
 
