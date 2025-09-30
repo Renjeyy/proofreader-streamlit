@@ -490,7 +490,7 @@ def analyze_document_coherence(full_text):
         return []
 
     prompt = f"""
-    Anda adalah seorang editor ahli yang bertugas menganalisis struktur dan koherensi sebuah tulisan.
+    Anda adalah seorang auditor ahli yang bertugas menganalisis struktur dan koherensi sebuah tulisan.
     Tugas Anda adalah membaca keseluruhan teks berikut dan mengidentifikasi setiap kalimat atau paragraf yang tidak koheren atau keluar dari topik utama di dalam sebuah sub-bagian.
     
     Untuk setiap ketidaksesuaian yang Anda temukan, lakukan hal berikut:
@@ -688,3 +688,4 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
