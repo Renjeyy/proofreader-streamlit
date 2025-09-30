@@ -530,16 +530,10 @@ coherence_file = st.file_uploader(
 if coherence_file is not None:
     if st.button("Analisis Koherensi", use_container_width=True, type="primary"):
         with st.spinner("Membaca dan menganalisis struktur dokumen..."):
-            # Kita gunakan fungsi extract_text_with_pages yang sudah ada
             document_pages = extract_text_with_pages(coherence_file)
             if document_pages:
-                # Gabungkan semua teks dari halaman menjadi satu
                 full_document_text = "\n".join([page['teks'] for page in document_pages])
-                
-                # Panggil fungsi analisis yang baru
                 coherence_issues = analyze_document_coherence(full_document_text)
-
-                # Simpan hasilnya ke session state
                 st.session_state.coherence_results = coherence_issues
 
 # Menampilkan hasil jika ada di session state
@@ -686,4 +680,5 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
