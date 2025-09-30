@@ -635,7 +635,7 @@ recommendation_file = st.file_uploader(
 )
 
 if recommendation_file is not None:
-    if st.button("Mulai Analisis", use_container_width=True, type="primary"):
+    if st.button("Dapatkan Rekomendasi Struktur", use_container_width=True, type="primary"):
         with st.spinner("Menganalisis keseluruhan struktur dokumen..."):
             document_pages = extract_text_with_pages(recommendation_file)
             if document_pages:
@@ -648,19 +648,17 @@ if recommendation_file is not None:
                 for rec in recommendations:
                     para = rec.get("misplaced_paragraph")
                     original_sec = rec.get("original_section")
-                    recommended_sec = rec.get("recommended_section")
-
+                    
                     if is_pdf:
-                        original_page = find_page_for_text(para, document_pages)
-                        recommended_page = find_page_for_text(recommended_sec, document_pages)
+                        # Jika PDF, lokasi adalah nomor halaman
+                        page_number = find_page_for_text(para, document_pages)
+                        location = f"Halaman {page_number}"
                     else:
-                        original_page = "N/A (DOCX)"
-                        recommended_page = "N/A (DOCX)"
+                        location = original_sec
 
                     processed_results.append({
                         "Paragraf yang Perlu Dipindah": para,
-                        "Lokasi Asli": f"{original_sec} (Hal. {original_page})",
-                        "Saran Lokasi Baru": f"{recommended_sec} (Hal. {recommended_page})"
+                        "Lokasi": location
                     })
                 
                 st.session_state.recommendations = processed_results
@@ -689,3 +687,4 @@ if 'recommendations' in st.session_state:
                 use_container_width=True
             )
  
+
