@@ -11,7 +11,7 @@ import zipfile
 
 # --- Konfigurasi Awal Halaman ---
 st.set_page_config(
-    page_title="Proofreader Bahasa Indonesia",
+    page_title="Proofreader Berstandar KBBI dan PUEBI",
     layout="wide"
 )
 
@@ -677,6 +677,7 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
 
