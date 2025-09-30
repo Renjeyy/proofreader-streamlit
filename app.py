@@ -522,7 +522,7 @@ def analyze_document_coherence(full_text):
 
 # Antarmuka Streamlit untuk Bagian 3
 coherence_file = st.file_uploader(
-    "Unggah dokumen untuk dianalisis koherensinya",
+    "Unggah dokumen Anda disini",
     type=['docx'],
     key="coherence_doc"
 )
@@ -629,7 +629,7 @@ def create_recommendation_highlight_docx(file_bytes, recommendations):
     return output_buffer.getvalue()
 
 recommendation_file = st.file_uploader(
-    "Unggah dokumen untuk mendapatkan saran restrukturisasi",
+    "Unggah Dokumen Anda disini",
     type=['pdf', 'docx'],
     key="recommendation_doc"
 )
@@ -686,5 +686,3 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
- 
-
