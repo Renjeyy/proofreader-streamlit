@@ -669,7 +669,7 @@ if 'recommendations' in st.session_state:
     if not results:
         st.success("Analisis selesai. Struktur dokumen Anda sudah koheren.")
     else:
-        st.warning(f"Analisis selesai. Ditemukan {len(results)} paragraf yang disarankan untuk dipindahkan.")
+        st.warning(f"Analisis selesai. Ditemukan {len(results)} paragraf yang disarankan untuk dipindahkan. Harap periksa kembali hasil yang sudah diberikan oleh model")
         
         df_recommendations = pd.DataFrame(results)
         st.dataframe(df_recommendations, use_container_width=True)
@@ -686,3 +686,4 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
