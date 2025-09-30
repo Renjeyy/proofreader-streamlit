@@ -550,8 +550,6 @@ if 'coherence_results' in st.session_state:
             'asli': 'Teks Asli (Tidak Koheren)',
             'saran': 'Saran Revisi (Koheren)'
         }, inplace=True)
-
-        st.dataframe(df_coherence, use_container_width=True)
         
 st.divider()
 st.markdown('### 4. Restrukturisasi Koherensi Dokumen <b style="color:darkblue;">(Available but still on development)</b>', unsafe_allow_html=True)
@@ -677,6 +675,7 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
 
