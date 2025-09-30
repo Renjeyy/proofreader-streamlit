@@ -114,7 +114,8 @@ def proofread_with_gemini(text_to_check):
     19. Untuk nama modul seperti "Modul Sourcing, dll", itu tidak perlu italic
     20. Kalau ada kata dalam bahasa inggris yang masih masuk akal dan nyambung dengan kalimat yang dibahas, tidak perlu Anda sarankan untuk ganti ke bahasa indonesia
     21. Jika ada bahasa inggris dan akronimnya seperti "General Ledger (GL)", tolong dilakukan italic pada kata tersebut pada saat download file hasil revisinya, akronimnya tidak usah\
-    22. Awal kalimat selalu dimulai dengan huruf kapital
+    22. Awal kalimat selalu dimulai dengan huruf kapital. Jika akhir poin diberi tanda ";", maka poin selanjutnya tidak perlu kapital
+    23. Jika terjadi ketidak-konsistenan seperti di halaman-halaman awal ada "barang dan/atau jasa" tapi dibawah-bawahnya cuma "barang dan jasa". Tolong juga dihighlight, begitupun juga untuk yang lain
 
     PENTING: Berikan hasil dalam format yang SANGAT KETAT. Untuk setiap kesalahan, gunakan format:
     [SALAH] kata atau frasa yang salah -> [BENAR] kata atau frasa perbaikan -> [KALIMAT] kalimat lengkap asli tempat kesalahan ditemukan
@@ -725,6 +726,7 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
 
