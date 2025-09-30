@@ -36,13 +36,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.subheader("Statistik Penggunaan (Sesi Ini)")
-
-col1, col2, col3 = st.columns(3)
-col1.metric("1. Dokumen Di-Proofread", st.session_state.proofread_count, "dokumen")
-col2.metric("2. Dokumen Dibandingkan", st.session_state.compare_count, "analisis")
-col3.metric("3. Struktur Dianalisis", st.session_state.recommendation_count, "dokumen")
-
 # --- BAGIAN 1: PROOFREAD ---
 st.divider() # Garis pemisah
 st.markdown('### 1. Proofread Dokumen <b style="color:green;">(Available)</b>', unsafe_allow_html=True)
@@ -697,4 +690,5 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
