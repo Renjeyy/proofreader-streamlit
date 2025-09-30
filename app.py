@@ -40,22 +40,6 @@ st.markdown(
 st.divider() # Garis pemisah
 st.markdown('### 1. Proofread Dokumen <b style="color:green;">(Available)</b>', unsafe_allow_html=True)
 
-# --- Inisialisasi Session State ---
-if 'analysis_results' not in st.session_state:
-    st.session_state.analysis_results = None
-if 'comparison_results' not in st.session_state:
-    st.session_state.comparison_results = None
-if 'recommendations' not in st.session_state:
-    st.session_state.recommendations = None
-    
-# Tambahkan counter di sini
-if 'proofread_count' not in st.session_state:
-    st.session_state.proofread_count = 0
-if 'compare_count' not in st.session_state:
-    st.session_state.compare_count = 0
-if 'recommendation_count' not in st.session_state:
-    st.session_state.recommendation_count = 0
-
 # --- Konfigurasi API Key Google ---
 try:
     api_key = st.secrets["GOOGLE_API_KEY"]
@@ -690,4 +674,5 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
