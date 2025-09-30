@@ -612,9 +612,7 @@ def create_recommendation_highlight_docx(file_bytes, recommendations):
     misplaced_paragraphs = [rec.get("Paragraf yang Perlu Dipindah") for rec in recommendations]
 
     for para in doc.paragraphs:
-        # Cek jika teks paragraf (setelah dibersihkan) ada di dalam daftar yang perlu di-highlight
         if para.text.strip() in [p.strip() for p in misplaced_paragraphs]:
-            # Beri highlight kuning pada setiap bagian (run) dari paragraf tersebut
             for run in para.runs:
                 run.font.highlight_color = WD_COLOR_INDEX.YELLOW
 
@@ -680,5 +678,6 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
