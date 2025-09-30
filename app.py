@@ -35,7 +35,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-st.markdown("<h2>Jika loading websitenya terlalu lama (lebih dari 5 menit), berkabar aja nanti akan dilakukan reboot</h2>
+st.markdown("<h2>Jika loading websitenya terlalu lama (lebih dari 5 menit), berkabar aja nanti akan dilakukan reboot</h2>")
 
 if 'analysis_results' not in st.session_state:
     st.session_state.analysis_results = None
@@ -678,6 +678,7 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
 
