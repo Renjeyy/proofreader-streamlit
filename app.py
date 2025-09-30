@@ -36,6 +36,9 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+if 'analysis_results' not in st.session_state:
+    st.session_state.analysis_results = None
+
 # --- BAGIAN 1: PROOFREAD ---
 st.divider() # Garis pemisah
 st.markdown('### 1. Proofread Dokumen <b style="color:green;">(Available)</b>', unsafe_allow_html=True)
@@ -674,5 +677,6 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
