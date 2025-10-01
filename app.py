@@ -572,6 +572,7 @@ def get_structural_recommendations(full_text):
     2.  Pada saat Anda baca dokumennya, tolong Identifikasi teks lengkap dari paragraf yang tidak pada tempatnya.
     3.  Tentukan di bab atau sub-bab mana paragraf itu berada saat ini (lokasi asli).
     4.  Berikan rekomendasi di bab atau sub-bab mana paragraf tersebut seharusnya diletakkan agar lebih koheren dan masuk akal.
+    5.  Kalau ada bagian yang harus dipindahkan ke Ringkasan Eksekutif, itu tidak perlu dimasukkan ke dalam tabel
 
     Berikan hasil dalam format JSON yang berisi sebuah list. Setiap objek harus memiliki tiga kunci: "misplaced_paragraph", "original_section", dan "recommended_section".
 
@@ -673,6 +674,7 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
 
