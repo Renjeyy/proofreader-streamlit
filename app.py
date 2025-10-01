@@ -598,15 +598,6 @@ def get_structural_recommendations(full_text):
         st.error(f"Gagal memproses respons dari AI: {e}")
         return []
 
-def find_page_for_text(search_text, document_pages):
-    """Mencari nomor halaman untuk sebuah teks spesifik di dalam dokumen PDF."""
-    # Ambil 50 karakter pertama untuk pencocokan, agar lebih efisien
-    snippet = search_text.strip()[:50]
-    for page_info in document_pages:
-        if snippet in page_info["teks"]:
-            return page_info["halaman"]
-    return "Tidak ditemukan"
-
 def create_recommendation_highlight_docx(file_bytes, recommendations):
     doc = docx.Document(io.BytesIO(file_bytes))
     
@@ -624,7 +615,7 @@ def create_recommendation_highlight_docx(file_bytes, recommendations):
 
 recommendation_file = st.file_uploader(
     "Unggah Dokumen Anda disini",
-    type=['pdf', 'docx'],
+    type=['docx'],
     key="recommendation_doc"
 )
 
@@ -680,15 +671,4 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
-
-
-
-
-
-
-
-
-
-
-
 
