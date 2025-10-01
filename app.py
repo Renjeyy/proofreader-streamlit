@@ -636,6 +636,9 @@ if recommendation_file is not None:
                     original_sec = rec.get("original_section")
                     recommended_sec = rec.get("recommended_section")
 
+                    original_page = "N/A (DOCX)"
+                    recommeded_page = "N/A (DOCX)"
+
                     if is_pdf:
                         original_page = find_page_for_text(para, document_pages)
                         recommended_page = find_page_for_text(recommended_sec, document_pages)
@@ -678,11 +681,4 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
-
-
-
-
-
-
-
 
