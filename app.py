@@ -439,7 +439,7 @@ with col2:
     proofread_file = st.file_uploader("Unggah Dokumen Hasil Proofread", type=['docx'], key="proofread_doc")
 
 if original_file is not None and proofread_file is not None:
-    if st.button("Bandingkan Dokumen", use_container_width=True, type="primary"):
+    if st.button("Mulai Analisis", use_container_width=True, type="primary"):
         with st.spinner("Mengekstrak teks dan membandingkan dokumen..."):
             original_paras = extract_paragraphs(original_file)
             revised_paras = extract_paragraphs(proofread_file)
@@ -680,6 +680,7 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
 
