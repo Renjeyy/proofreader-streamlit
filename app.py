@@ -634,26 +634,19 @@ if recommendation_file is not None:
                 for rec in recommendations:
                     para = rec.get("misplaced_paragraph")
                     original_sec = rec.get("original_section")
-                    recommended_sec = rec.get("recommended_section")
+                    recommended_sec = rec.get("recommended_section") # <-- Ambil data baru
 
                     original_page = "N/A (DOCX)"
-                    recommeded_page = "N/A (DOCX)"
-
+                    recommended_page = "N/A (DOCX)"
+                    
                     if is_pdf:
                         original_page = find_page_for_text(para, document_pages)
                         recommended_page = find_page_for_text(recommended_sec, document_pages)
-                        # Jika PDF, format dengan nomor halaman
-                        lokasi_asli_str = f"{original_sec} (Hal. {original_page})"
-                        saran_lokasi_str = f"{recommended_sec} (Hal. {recommended_page})"
-                    else:
-                        # Jika DOCX, gunakan nama section saja
-                        lokasi_asli_str = original_sec
-                        saran_lokasi_str = recommended_sec
 
                     processed_results.append({
                         "Paragraf yang Perlu Dipindah": para,
                         "Lokasi Asli": f"{original_sec} (Hal. {original_page})",
-                        "Saran Lokasi Baru": f"{recommended_sec} (Hal. {recommended_page})"
+                        "Saran Lokasi Baru": f"{recommended_sec} (Hal. {recommended_page})" # <-- Tambahkan ke tabel
                     })
                 
                 st.session_state.recommendations = processed_results
@@ -681,4 +674,5 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
