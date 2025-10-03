@@ -577,8 +577,9 @@ def get_structural_recommendations(full_text):
     3.  Tentukan di bab atau sub-bab mana paragraf itu berada saat ini (lokasi asli).
     4.  Berikan rekomendasi di bab atau sub-bab mana paragraf tersebut seharusnya diletakkan agar lebih koheren dan masuk akal.
     5.  Kalau ada bagian yang harus dipindahkan ke Ringkasan Eksekutif, itu tidak perlu dimasukkan ke dalam tabel.
-    6. Kalau ada kata yang merupakan bahasa inggris, biarkan saja dan tidak perlu ditranslate ke bahasa indonesia, Anda cukup highlight kata tersebut
-    7. Kalau ada kata yang tidak baku sesuai dengan standar KBBI, harap Anda perbaiki juga sehingga kata tersebut baku sesuai KBBI
+    6.  Kalau ada kata yang merupakan bahasa inggris, biarkan saja dan tidak perlu ditranslate ke bahasa indonesia, Anda cukup highlight kata tersebut
+    7.  Kalau ada kata yang tidak baku sesuai dengan standar KBBI, harap Anda perbaiki juga sehingga kata tersebut baku sesuai KBBI
+    8.  Kalau ada yang tertulis "barang dan jasa", harap revisi jadi "barang dan/atau jasa"
     
     Berikan hasil dalam format JSON yang berisi sebuah list. Setiap objek harus memiliki tiga kunci: "misplaced_paragraph", "original_section", dan "recommended_section".
 
@@ -680,6 +681,7 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
 
