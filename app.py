@@ -500,6 +500,7 @@ def analyze_document_coherence(full_text):
     2. Tentukan topik utama dari paragraf atau bagian tempat kalimat itu berada pada setiap section / subsection.
     3. Identifikasi kalimat asli yang menyimpang dari topik tersebut yang telah Anda temukan pada section / subsection tersebut.
     4. Bila ada kalimat yang sekiranya memyimpang, Berikan saran dengan menghighlight kalimat tersebut untuk diulis ulang kalimat (rewording) tersebut agar relevan dan menyatu kembali dengan topik utamanya, sambil berusaha mempertahankan maksud aslinya jika memungkinkan.
+    5. Kalau ada kata yang merupakan bahasa inggris, biarkan saja dan tidak perlu ditranslate ke bahasa indonesia, Anda cukup highlight kata tersebut
 
     Berikan hasil dalam format yang SANGAT KETAT seperti di bawah ini. Ulangi format ini untuk setiap kalimat menyimpang yang Anda temukan:
     [TOPIK UTAMA] topik utama dari bagian tersebut -> [TEKS ASLI] kalimat asli yang tidak koheren -> [SARAN REVISI] versi kalimat yang sudah diperbaiki agar koheren
@@ -676,5 +677,6 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
 
