@@ -530,7 +530,7 @@ coherence_file = st.file_uploader(
 )
 
 if coherence_file is not None:
-    if st.button("Mulai Analisis", use_container_width=True, type="primary"):
+    if st.button("Mulai Analisis Koherensi Dokumen", use_container_width=True, type="primary"):
         with st.spinner("Membaca dan menganalisis struktur dokumen..."):
             document_pages = extract_text_with_pages(coherence_file)
             if document_pages:
@@ -676,4 +676,5 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
 
