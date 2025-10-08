@@ -613,7 +613,6 @@ def create_recommendation_highlight_docx(file_bytes, recommendations):
     """
     doc = docx.Document(io.BytesIO(file_bytes))
 
-    # Ambil teks dari paragraf yang perlu di-highlight dari hasil olahan
     misplaced_paragraphs = [rec.get("Paragraf yang Perlu Dipindah") for rec in recommendations]
 
     for para in doc.paragraphs:
@@ -628,11 +627,11 @@ def create_recommendation_highlight_docx(file_bytes, recommendations):
 recommendation_file = st.file_uploader(
     "Unggah Dokumen Anda disini",
     type=['docx'],
-    key="recommendation_doc_simple" # Key diubah agar unik
+    key="recommendation_doc_simple" #Primary Key
 )
 
 if recommendation_file is not None:
-    if st.button("Dapatkan Rekomendasi Struktur", use_container_width=True, type="primary", key="recommendation_button_simple"):
+    if st.button("Mulai Analisis Restrukturisasi Dokumen", use_container_width=True, type="primary", key="recommendation_button_simple"):
         with st.spinner("Menganalisis keseluruhan struktur dokumen..."):
             document_pages = extract_text_with_pages(recommendation_file)
             if document_pages:
