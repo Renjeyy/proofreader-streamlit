@@ -580,6 +580,7 @@ def get_structural_recommendations(full_text):
     6.  Kalau ada kata yang merupakan bahasa inggris, biarkan saja dan tidak perlu ditranslate ke bahasa indonesia, Anda cukup highlight kata tersebut
     7.  Kalau ada kata yang tidak baku sesuai dengan standar KBBI, harap Anda perbaiki juga sehingga kata tersebut baku sesuai KBBI
     8.  Kalau ada yang tertulis "barang dan jasa", harap revisi jadi "barang dan/atau jasa"
+    9.  Pada bagian lampiran, tidak perlu dikasih usulan untuk dipindahkan kemana karena itu sudah fix disitu
     
     Berikan hasil dalam format JSON yang berisi sebuah list. Setiap objek harus memiliki tiga kunci: "misplaced_paragraph", "original_section", dan "recommended_section".
 
@@ -681,10 +682,3 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
-
-
-
-
-
-
-
