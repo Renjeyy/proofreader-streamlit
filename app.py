@@ -563,174 +563,107 @@ if 'coherence_results' in st.session_state:
 st.divider()
 st.markdown('### 4. Restrukturisasi Koherensi Dokumen <b style="color:red;">(Available but still on development)</b>', unsafe_allow_html=True)
 
-def restructure_document_with_ai(full_text):
-    """Meminta AI untuk menyusun ulang dokumen dan mengembalikan strukturnya dalam format JSON."""
-    prompt = f"""
-    Anda adalah seorang editor struktural profesional. Tugas Anda adalah merestrukturisasi draf dokumen berikut agar setiap bagian dan sub-bagian memiliki koherensi topik yang sempurna.
+def get_structural_recommendations(full_text):
+    """Meminta AI untuk menganalisis dan memberikan saran pemindahan paragraf."""
+    if not full_text or full_text.isspace():
+        return []
+    prompt = f"""
+    Anda adalah seorang editor struktural ahli. Tugas Anda adalah menganalisis draf dokumen berikut untuk menemukan paragraf yang "tersesat" (tidak sesuai dengan topik utama sub-babnya).
+    Untuk setiap paragraf yang tersesat, Anda harus:
+    1.  Bacalah semua dokumennya terlebih dahulu sebelum Anda membuat revisi
+    2.  Pada saat Anda baca dokumennya, tolong Identifikasi teks lengkap dari paragraf yang tidak pada tempatnya.
+    3.  Tentukan di bab atau sub-bab mana paragraf itu berada saat ini (lokasi asli).
+    4.  Berikan rekomendasi di bab atau sub-bab mana paragraf tersebut seharusnya diletakkan agar lebih koheren dan masuk akal.
+    5.  Kalau ada bagian yang harus dipindahkan ke Ringkasan Eksekutif, itu tidak perlu dimasukkan ke dalam tabel.
+    6.  Kalau ada kata yang merupakan bahasa inggris, biarkan saja dan tidak perlu ditranslate ke bahasa indonesia, Anda cukup highlight kata tersebut
+    7.  Kalau ada kata yang tidak baku sesuai dengan standar KBBI, harap Anda perbaiki juga sehingga kata tersebut baku sesuai KBBI
+    8.  Kalau ada yang tertulis "barang dan jasa", harap revisi jadi "barang dan/atau jasa"
+    9.  Pada bagian lampiran, tidak perlu dikasih usulan untuk dipindahkan kemana karena itu sudah fix disitu
+    10. 
     
-    Tugas Anda:
-    1.  Bacalah semua dokumennya terlebih dahulu sebelum Anda membuat revisi
-    2.  Pada saat Anda baca dokumennya, tolong Identifikasi teks lengkap dari paragraf yang tidak pada tempatnya.
-    3.  Tentukan di bab atau sub-bab mana paragraf itu berada saat ini (lokasi asli).
-    4.  Berikan rekomendasi di bab atau sub-bab mana paragraf tersebut seharusnya diletakkan agar lebih koheren dan masuk akal.
-    5.  Kalau ada bagian yang harus dipindahkan ke Ringkasan Eksekutif, itu tidak perlu dimasukkan ke dalam tabel.
-    6.  Kalau ada kata yang merupakan bahasa inggris, biarkan saja dan tidak perlu ditranslate ke bahasa indonesia, Anda cukup highlight kata tersebut
-    7.  Kalau ada kata yang tidak baku sesuai dengan standar KBBI, harap Anda perbaiki juga sehingga kata tersebut baku sesuai KBBI
-    8.  Kalau ada yang tertulis "barang dan jasa", harap revisi jadi "barang dan/atau jasa"
-    9.  Pada bagian lampiran, tidak perlu dikasih usulan untuk dipindahkan kemana karena itu sudah fix disitu
-   
-    Berikan output dalam format JSON yang berisi sebuah list. Setiap objek dalam list mewakili satu bab/sub-bab dengan kunci "section_title" dan "content" (sebuah list string dari paragraf-paragraf di dalamnya).
+    Berikan hasil dalam format JSON yang berisi sebuah list. Setiap objek harus memiliki tiga kunci: "misplaced_paragraph", "original_section", dan "recommended_section".
+    Contoh Format JSON:
+    [
+      {{
+        "misplaced_paragraph": "Selain itu, audit internal juga bertugas memeriksa laporan keuangan setiap kuartal...",
+        "original_section": "Bab 2.1: Prosedur Whistleblowing",
+        "recommended_section": "Bab 4.2: Peran Audit Internal"
+      }}
+    ]
+    Jika dokumen sudah bagus, kembalikan list kosong: []
+    Teks Dokumen:
+    ---
+    {full_text}
+    """
+    try:
+        response = model.generate_content(prompt)
+        cleaned_response = re.sub(r'```json\s*|\s*```', '', response.text.strip())
+        import json
+        return json.loads(cleaned_response)
+    except Exception as e:
+        st.error(f"Gagal memproses respons dari AI: {e}")
+        return []
 
-    Contoh Format JSON:
-    [
-      {{
-        "section_title": "BAB 1: PENDAHULUAN",
-        "content": [
-          "Paragraf pertama pendahuluan...",
-          "Paragraf kedua pendahuluan..."
-        ]
-      }},
-      {{
-        "section_title": "BAB 2: SISTEM WHISTLEBLOWING",
-        "content": [
-          "Paragraf pertama tentang whistleblowing...",
-          "Paragraf kedua tentang whistleblowing..."
-        ]
-      }}
-    ]
+def create_recommendation_highlight_docx(file_bytes, recommendations):
+    doc = docx.Document(io.BytesIO(file_bytes))
+    # Ambil teks dari paragraf yang perlu di-highlight
+    misplaced_paragraphs = [rec.get("Paragraf yang Perlu Dipindah") for rec in recommendations]
 
-    Berikut adalah teks dokumen yang harus direstrukturisasi:
-    ---
-    {full_text}
-    """
-    try:
-        response = model.generate_content(prompt)
-        cleaned_response = re.sub(r'```json\s*|\s*```', '', response.text.strip())
-        import json
-        return json.loads(cleaned_response)
-    except Exception as e:
-        st.error(f"Gagal memproses restrukturisasi dokumen: {e}")
-        return None
+    for para in doc.paragraphs:
+        if para.text.strip() in [p.strip() for p in misplaced_paragraphs]:
+            for run in para.runs:
+                run.font.highlight_color = WD_COLOR_INDEX.YELLOW
 
-def create_restructured_docx(content_list, original_doc):
-    """Menciptakan file .docx baru dari hasil restrukturisasi AI sambil menjaga style."""
-    new_doc = Document()
-    
-    # Salin properti dasar dari dokumen asli (margin, dll.)
-    for section in original_doc.sections:
-        new_section = new_doc.add_section()
-        new_section.left_margin = section.left_margin
-        new_section.right_margin = section.right_margin
-        new_section.top_margin = section.top_margin
-        new_section.bottom_margin = section.bottom_margin
+    output_buffer = io.BytesIO()
+    doc.save(output_buffer)
+    return output_buffer.getvalue()
 
-    # Buat pemetaan dari teks paragraf ke stylenya di dokumen asli
-    style_map = {p.text.strip(): p.style for p in original_doc.paragraphs if p.text.strip()}
-
-    for section in content_list:
-        title = section.get("section_title", "Tanpa Judul")
-        content = section.get("content", [])
-        
-        # Tambahkan judul bab/sub-bab
-        new_doc.add_heading(title, level=1)
-        
-        for para_text in content:
-            # Tambahkan paragraf baru
-            new_para = new_doc.add_paragraph(para_text)
-            # Coba terapkan style asli jika ditemukan
-            if para_text.strip() in style_map:
-                new_para.style = style_map[para_text.strip()]
-
-    output_buffer = io.BytesIO()
-    new_doc.save(output_buffer)
-    return output_buffer.getvalue()
-
-    def create_recommendation_highlight_docx(file_bytes, recommendations):
-    """
-    Membuat file DOCX asli dengan highlight pada paragraf yang disarankan untuk dipindahkan.
-    """
-    doc = docx.Document(io.BytesIO(file_bytes))
-
-    misplaced_paragraphs = [rec.get("Paragraf yang Perlu Dipindah") for rec in recommendations]
-
-    for para in doc.paragraphs:
-        # Cek jika teks paragraf (setelah dibersihkan) ada di dalam daftar
-        if para.text.strip() in [p.strip() for p in misplaced_paragraphs if p]:
-            # Beri highlight kuning pada setiap bagian (run) dari paragraf tersebut
-            for run in para.runs:
-                run.font.highlight_color = WD_COLOR_INDEX.YELLOW
-                
-    output_buffer = io.BytesIO()
-    doc.save(output_buffer)
-    return output_buffer.getvalue()
-    
 recommendation_file = st.file_uploader(
-    "Unggah Dokumen Anda disini",
-    type=['docx'],
-    key="recommendation_doc"
+    "Unggah Dokumen Anda disini",
+    type=['docx'],
+    key="recommendation_doc"
 )
 
 if recommendation_file is not None:
-    if st.button("Mulai Analisis Dokumen Anda", use_container_width=True, type="primary"):
-        with st.spinner("Menganalisis dan merestrukturisasi dokumen..."):
-            document_pages = extract_text_with_pages(recommendation_file)
-            if document_pages:
-                full_text = "\n".join([page['teks'] for page in document_pages])
-                recommendations = get_structural_recommendations(full_text)
-                restructured_content = restructure_document_with_ai(full_text)
-                processed_results = []
-                is_pdf = recommendation_file.name.endswith('.pdf')
-                for rec in recommendations:
-                    para = rec.get("misplaced_paragraph")
-                    original_sec = rec.get("original_section")
-                    recommended_sec = rec.get("recommended_section")
-                    original_page = "N/A (DOCX)"
-                    if is_pdf:
-                        original_page = find_page_for_text(para, document_pages)
-                    
-                    processed_results.append({
-                        "Paragraf yang Perlu Dipindah": para,
-                        "Lokasi Asli": f"{original_sec} (Hal. {original_page})",
-                        "Saran Lokasi Baru": recommended_sec
-                    })
-                
-                # Simpan semua hasil ke session state
-                st.session_state.recommendations = processed_results
-                st.session_state.restructured_content = restructured_content
+    if st.button("Mulai Analisis Dokumen", use_container_width=True, type="primary"):
+        with st.spinner("Menganalisis keseluruhan struktur dokumen..."):
+            document_pages = extract_text_with_pages(recommendation_file)
+            if document_pages:
+                full_text = "\n".join([page['teks'] for page in document_pages])
+                recommendations = get_structural_recommendations(full_text)
+                processed_results = []
+                is_pdf = recommendation_file.name.endswith('.pdf')
+                for rec in recommendations:
+                    para = rec.get("misplaced_paragraph")
+                    original_sec = rec.get("original_section")
+                    recommended_sec = rec.get("recommended_section") # <-- Ambil data baru
+                    original_page = "N/A (DOCX)"
+                    recommended_page = "N/A (DOCX)"
+                    if is_pdf:
+                        original_page = find_page_for_text(para, document_pages)
+                        recommended_page = find_page_for_text(recommended_sec, document_pages)
+                    processed_results.append({
+                        "Paragraf yang Perlu Dipindah": para,
+                        "Lokasi Asli": f"{original_sec} (Hal. {original_page})",
+                        "Saran Lokasi Baru": f"{recommended_sec} (Hal. {recommended_page})" # <-- Tambahkan ke tabel
+                    })
+                st.session_state.recommendations = processed_results
 
 if 'recommendations' in st.session_state:
-    results = st.session_state.recommendations
-    restructured_content = st.session_state.get('restructured_content')
-    
-    if not results:
-        st.success("Analisis selesai. Struktur dokumen Anda sudah koheren.")
-    else:
-        st.warning(f"Analisis selesai. Ditemukan {len(results)} paragraf yang disarankan untuk dipindahkan.")
-        
-        df_recommendations = pd.DataFrame(results)
-        st.dataframe(df_recommendations, use_container_width=True)
-        
-        if recommendation_file and recommendation_file.name.endswith('.docx'):         
-            col1, col2 = st.columns(2)
-            with col1:
-                # Tombol untuk download highlight (seperti sebelumnya)
-                highlighted_docx_data = create_recommendation_highlight_docx(recommendation_file.getvalue(), results)
-                st.download_button(
-                    label="Unduh Dokumen dengan Highlight",
-                    data=highlighted_docx_data,
-                    file_name=f"highlight_rekomendasi_{recommendation_file.name}",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    use_container_width=True
-                )
-            with col2:
-                # Tombol untuk download file yang sudah direstrukturisasi
-                if restructured_content:
-                    original_doc_for_style = docx.Document(io.BytesIO(recommendation_file.getvalue()))
-                    restructured_docx_data = create_restructured_docx(restructured_content, original_doc_for_style)
-                    st.download_button(
-                        label="Unduh Dokumen Hasil Revisi Struktur",
-                        data=restructured_docx_data,
-                        file_name=f"revisi_struktur_{recommendation_file.name}",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                        use_container_width=True
-                    )
+    results = st.session_state.recommendations
+    if not results:
+        st.success("Analisis selesai. Struktur dokumen Anda sudah koheren.")
+    else:
+        st.warning(f"Analisis selesai. Ditemukan {len(results)} paragraf yang disarankan untuk dipindahkan. Harap periksa kembali hasil yang sudah diberikan oleh model")
+        df_recommendations = pd.DataFrame(results)
+        st.dataframe(df_recommendations, use_container_width=True)
+        if recommendation_file and recommendation_file.name.endswith('.docx'):
+            # Membuat file DOCX yang sudah di-highlight
+            highlighted_docx_data = create_recommendation_highlight_docx(recommendation_file.getvalue(), results)
+            st.download_button(
+                label="Unduh Dokumen dengan Highlight (.docx)",
+                data=highlighted_docx_data,
+                file_name=f"highlight_rekomendasi_{recommendation_file.name}",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True
+            )
