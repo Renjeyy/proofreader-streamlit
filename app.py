@@ -640,7 +640,21 @@ def create_restructured_docx(content_list, original_doc):
             # Coba terapkan style asli jika ditemukan
             if para_text.strip() in style_map:
                 new_para.style = style_map[para_text.strip()]
+def create_recommendation_highlight_docx(file_bytes, recommendations):
+    """
+    Membuat file DOCX asli dengan highlight pada paragraf yang disarankan untuk dipindahkan.
+    """
+    doc = docx.Document(io.BytesIO(file_bytes))
 
+    misplaced_paragraphs = [rec.get("Paragraf yang Perlu Dipindah") for rec in recommendations]
+
+    for para in doc.paragraphs:
+        # Cek jika teks paragraf (setelah dibersihkan) ada di dalam daftar
+        if para.text.strip() in [p.strip() for p in misplaced_paragraphs if p]:
+            # Beri highlight kuning pada setiap bagian (run) dari paragraf tersebut
+            for run in para.runs:
+                run.font.highlight_color = WD_COLOR_INDEX.YELLOW
+                
     output_buffer = io.BytesIO()
     new_doc.save(output_buffer)
     return output_buffer.getvalue()
@@ -719,3 +733,4 @@ if 'recommendations' in st.session_state:
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                         use_container_width=True
                     )
+
