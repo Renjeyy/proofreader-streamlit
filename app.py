@@ -564,7 +564,6 @@ st.divider()
 st.markdown('### 4. Restrukturisasi Koherensi Dokumen <b style="color:red;">(Available but still on development)</b>', unsafe_allow_html=True)
 
 def get_structural_recommendations(full_text):
-    """Meminta AI untuk menganalisis dan memberikan saran pemindahan paragraf."""
     if not full_text or full_text.isspace():
         return []
     prompt = f"""
@@ -667,3 +666,4 @@ if 'recommendations' in st.session_state:
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+
