@@ -656,7 +656,7 @@ def create_recommendation_highlight_docx(file_bytes, recommendations):
                 run.font.highlight_color = WD_COLOR_INDEX.YELLOW
                 
     output_buffer = io.BytesIO()
-    new_doc.save(output_buffer)
+    doc.save(output_buffer)
     return output_buffer.getvalue()
     
 recommendation_file = st.file_uploader(
@@ -733,4 +733,5 @@ if 'recommendations' in st.session_state:
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                         use_container_width=True
                     )
+
 
