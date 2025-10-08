@@ -569,7 +569,7 @@ def get_structural_recommendations(full_text):
         return []
 
     prompt = f"""
-    Anda adalah seorang editor struktural ahli. Tugas Anda adalah menganalisis draf dokumen berikut untuk menemukan paragraf yang "tersesat" (tidak sesuai dengan topik utama sub-babnya).
+    Anda adalah seorang auditor ahli yang bertugas untuk melakukan analisis terhadap dokumen. Tugas Anda adalah menganalisis draf dokumen berikut untuk menemukan paragraf yang "tersesat" (tidak sesuai dengan topik utama sub-babnya).
 
     Untuk setiap paragraf yang tersesat, Anda harus:
     1.  Bacalah semua dokumennya terlebih dahulu sebelum Anda membuat revisi
