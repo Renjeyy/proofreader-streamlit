@@ -632,7 +632,7 @@ def create_restructured_docx(content_list, original_doc):
         content = section.get("content", [])
         
         # Tambahkan judul bab/sub-bab
-        new_doc.add_heading(title, level=1) # Asumsi semua judul adalah level 1
+        new_doc.add_heading(title, level=1)
         
         for para_text in content:
             # Tambahkan paragraf baru
@@ -640,7 +640,12 @@ def create_restructured_docx(content_list, original_doc):
             # Coba terapkan style asli jika ditemukan
             if para_text.strip() in style_map:
                 new_para.style = style_map[para_text.strip()]
-def create_recommendation_highlight_docx(file_bytes, recommendations):
+
+    output_buffer = io.BytesIO()
+    new_doc.save(output_buffer)
+    return output_buffer.getvalue()
+
+    def create_recommendation_highlight_docx(file_bytes, recommendations):
     """
     Membuat file DOCX asli dengan highlight pada paragraf yang disarankan untuk dipindahkan.
     """
@@ -705,11 +710,8 @@ if 'recommendations' in st.session_state:
         df_recommendations = pd.DataFrame(results)
         st.dataframe(df_recommendations, use_container_width=True)
         
-        # --- KODE BARU UNTUK DUA TOMBOL DOWNLOAD ---
-        if recommendation_file and recommendation_file.name.endswith('.docx'):
-            
+        if recommendation_file and recommendation_file.name.endswith('.docx'):         
             col1, col2 = st.columns(2)
-
             with col1:
                 # Tombol untuk download highlight (seperti sebelumnya)
                 highlighted_docx_data = create_recommendation_highlight_docx(recommendation_file.getvalue(), results)
@@ -720,7 +722,6 @@ if 'recommendations' in st.session_state:
                     mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     use_container_width=True
                 )
-
             with col2:
                 # Tombol untuk download file yang sudah direstrukturisasi
                 if restructured_content:
@@ -733,5 +734,3 @@ if 'recommendations' in st.session_state:
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                         use_container_width=True
                     )
-
-
