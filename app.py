@@ -21,7 +21,6 @@ try:
     st.image("Logo_IFG-removebg-preview.png", width=225)
 except Exception:
     st.warning("Logo tidak ditemukan. Pastikan file logo ada di direktori yang sama.")
-st.markdown("<h1 style='text-align: center;'>Website Proofreader COE Divisi SKAI IFG</h1>", unsafe_allow_html=True)
 st.markdown(
     """
     <style>
@@ -51,7 +50,7 @@ st.markdown(
       animation: 1s ease-out 0s 1 slideInFromLeft;
       text-align: center;
       font-size: 2em;
-      font-weight: 300;
+      font-weight: bold;
     }
 
     .slide-in-right {
