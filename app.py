@@ -68,40 +68,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-section_mapping = {
-    "Pilih Bagian...": None,
-    "1. Proofread Dokumen": "bagian1",
-    "2. Bandingkan Dokumen": "bagian2",
-    "3. Analisis Koherensi": "bagian3",
-    "4. Restrukturisasi Dokumen": "bagian4"
-}
-
-# Buat dropdown
-selected_section = st.selectbox(
-    "Navigasi Cepat",
-    options=list(section_mapping.keys())
-)
-
-# Jika pengguna memilih salah satu bagian, jalankan JavaScript untuk scroll
-if selected_section != "Pilih Bagian...":
-    anchor_id = section_mapping[selected_section]
-    
-    # Injeksi JavaScript untuk melakukan smooth scroll
-    st.markdown(f"""
-        <script>
-            // Beri sedikit jeda agar elemen sempat dirender
-            setTimeout(function() {{
-                const anchor = document.getElementById('{anchor_id}');
-                if (anchor) {{
-                    anchor.scrollIntoView({{ behavior: 'smooth', block: 'start' }});
-                }}
-            }}, 200);
-        </script>
-    """, unsafe_allow_html=True)
-    
-    # Reset dropdown setelah scroll agar bisa dipilih lagi
-    st.session_state.selectbox_value = "Pilih Bagian..." 
-    time.sleep(0.5)
 st.markdown(
     """
     <div style="border: 5px solid black; border-radius: 5px; padding: 15px; margin-bottom: 20px;">
