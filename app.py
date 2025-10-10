@@ -4,6 +4,7 @@ import docx
 import fitz
 import io
 import re
+import time
 from docx.enum.text import WD_COLOR_INDEX
 import pandas as pd
 from docx.shared import Pt
@@ -67,6 +68,40 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+section_mapping = {
+    "Pilih Bagian...": None,
+    "1. Proofread Dokumen": "bagian1",
+    "2. Bandingkan Dokumen": "bagian2",
+    "3. Analisis Koherensi": "bagian3",
+    "4. Restrukturisasi Dokumen": "bagian4"
+}
+
+# Buat dropdown
+selected_section = st.selectbox(
+    "Navigasi Cepat",
+    options=list(section_mapping.keys())
+)
+
+# Jika pengguna memilih salah satu bagian, jalankan JavaScript untuk scroll
+if selected_section != "Pilih Bagian...":
+    anchor_id = section_mapping[selected_section]
+    
+    # Injeksi JavaScript untuk melakukan smooth scroll
+    st.markdown(f"""
+        <script>
+            // Beri sedikit jeda agar elemen sempat dirender
+            setTimeout(function() {{
+                const anchor = document.getElementById('{anchor_id}');
+                if (anchor) {{
+                    anchor.scrollIntoView({{ behavior: 'smooth', block: 'start' }});
+                }}
+            }}, 200);
+        </script>
+    """, unsafe_allow_html=True)
+    
+    # Reset dropdown setelah scroll agar bisa dipilih lagi
+    st.session_state.selectbox_value = "Pilih Bagian..." 
+    time.sleep(0.5)
 st.markdown(
     """
     <div style="border: 5px solid black; border-radius: 5px; padding: 15px; margin-bottom: 20px;">
@@ -360,6 +395,7 @@ if st.session_state.analysis_results is not None:
 
 
 st.divider()
+st.markdown("<a id='bagian2'></a>", unsafe_allow_html=True)
 st.markdown('### 2. Bandingkan Dokumen <b style="color:green;">(Available)</b>', unsafe_allow_html=True)
 
 # Tambahan import yang mungkin diperlukan untuk bagian ini
@@ -529,6 +565,7 @@ elif 'comparison_results' in st.session_state:
 
 # --- BAGIAN 3: ANALISIS KOHERENSI DOKUMEN ---
 st.divider()
+st.markdown("<a id='bagian3'></a>", unsafe_allow_html=True)
 st.markdown('### 3. Analisis Koherensi Dokumen <b style="color:green;">(Available)</b>', unsafe_allow_html=True)
 
 def analyze_document_coherence(full_text):
@@ -606,6 +643,7 @@ if 'coherence_results' in st.session_state:
 
 #Bagian 4 : Restrukturisasi Koherensi Dokumen
 st.divider()
+st.markdown("<a id='bagian4'></a>", unsafe_allow_html=True)
 st.markdown('### 4. Restrukturisasi Koherensi Dokumen <b style="color:red;">(Available but still on development)</b>', unsafe_allow_html=True)
 
 def get_structural_recommendations(full_text):
