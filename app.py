@@ -25,41 +25,32 @@ except Exception:
 st.markdown(
     """
     <style>
-    @keyframes slideInFromLeft {
-      0% {
-        transform: translateX(-100%);
-        opacity: 0;
-      }
-      100% {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
+    /* Keyframes untuk animasi tidak perlu diubah */
+    @keyframes slideInFromLeft { 0% { transform: translateX(-100%); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+    @keyframes slideInFromRight { 0% { transform: translateX(100%); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+    
+    /* Keyframes BARU untuk animasi fade-in */
+    @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
 
-    @keyframes slideInFromRight {
-      0% {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      100% {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-
+    /* Pengaturan untuk animasi sliding text (DIPERLAMBAT) */
     .slide-in-left {
-      animation: 1s ease-out 0s 1 slideInFromLeft;
+      animation: 3s ease-out 0s 1 slideInFromLeft; /* Durasi diubah menjadi 2 detik */
       text-align: center;
       font-size: 2em;
       font-weight: bold;
     }
-
     .slide-in-right {
-      animation: 1s ease-out 0s 1 slideInFromRight;
+      animation: 3s ease-out 0s 1 slideInFromRight; /* Durasi diubah menjadi 2 detik */
       text-align: center;
       font-size: 2.5em;
       font-weight: bold;
       margin-bottom: 20px;
+    }
+
+    /* Kelas BARU untuk membuat kotak muncul belakangan */
+    .fade-in-box {
+      animation: fadeIn 1s ease-in 2.2s forwards; /* Muncul setelah 2.2 detik */
+      opacity: 0; /* Mulai dalam keadaan transparan */
     }
     </style>
     
@@ -68,9 +59,11 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+# Box Warning (Fade in)
 st.markdown(
     """
-    <div style="border: 5px solid black; border-radius: 5px; padding: 15px; margin-bottom: 20px;">
+    <div class="fade-in-box" style="border: 5px solid black; border-radius: 5px; padding: 15px; margin-bottom: 20px;">
         <p style="color:red; font-weight:bold; text-align:center; font-size: 1.8em;">
             Important !
         </p>
