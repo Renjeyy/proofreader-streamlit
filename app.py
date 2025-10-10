@@ -24,6 +24,52 @@ except Exception:
 st.markdown("<h1 style='text-align: center;'>Website Proofreader COE Divisi SKAI IFG</h1>", unsafe_allow_html=True)
 st.markdown(
     """
+    <style>
+    @keyframes slideInFromLeft {
+      0% {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+      100% {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideInFromRight {
+      0% {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      100% {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .slide-in-left {
+      animation: 1s ease-out 0s 1 slideInFromLeft;
+      text-align: center;
+      font-size: 2em;
+      font-weight: 300;
+    }
+
+    .slide-in-right {
+      animation: 1s ease-out 0s 1 slideInFromRight;
+      text-align: center;
+      font-size: 2.5em;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    </style>
+    
+    <div class="slide-in-left">Selamat Datang di</div>
+    <div class="slide-in-right">Website Proofread CoE IFG</div>
+    """,
+    unsafe_allow_html=True
+)
+st.markdown(
+    """
     <div style="border: 5px solid black; border-radius: 5px; padding: 15px; margin-bottom: 20px;">
         <p style="color:red; font-weight:bold; text-align:center; font-size: 1.8em;">
             Important !
