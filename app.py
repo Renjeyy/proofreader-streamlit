@@ -88,7 +88,7 @@ if 'analysis_results' not in st.session_state:
     st.session_state.analysis_results = None
 
 # --- BAGIAN 1: PROOFREAD ---
-st.divider() # Garis pemisah
+st.markdown("<a id='bagian1'></a>", unsafe_allow_html=True)
 st.markdown('### 1. Proofread Dokumen <b style="color:green;">(Available)</b>', unsafe_allow_html=True)
 
 # --- Konfigurasi API Key Google ---
