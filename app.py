@@ -276,7 +276,7 @@ if uploaded_file is not None:
     st.info(f"File yang diunggah: **{uploaded_file.name}**")
 
     if st.button("Mulai Analisis", type="primary", use_container_width=True):
-        with st.spinner("Membaca dan menganalisis dokumen..."):
+        with st.spinner("Please Wait while Your Document is being Analyzed..."):
             document_pages = extract_text_with_pages(uploaded_file)
             
             if document_pages:
