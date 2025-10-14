@@ -28,6 +28,29 @@ st.markdown(
     /* Keyframes untuk animasi tidak perlu diubah */
     @keyframes slideInFromLeft { 0% { transform: translateX(-100%); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
     @keyframes slideInFromRight { 0% { transform: translateX(100%); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+
+    /* Pengaturan untuk animasi sliding text (durasi 2 detik) */
+    .slide-in-left { animation: 2s ease-out 0s 1 slideInFromLeft; ... }
+    .slide-in-right { animation: 2s ease-out 0s 1 slideInFromRight; ... }
+    
+    /* Pengaturan untuk kotak peringatan (muncul setelah 2.2 detik) */
+    .fade-in-box {
+      animation: fadeIn 1s ease-in 2.2s forwards;
+      opacity: 0;
+    }
+
+    /* --- KELAS BARU UNTUK KONTEN UTAMA --- */
+    .main-content-fade-in {
+      /* Muncul setelah 3.4 detik (setelah box selesai) */
+      animation: fadeIn 1s ease-in 3.4s forwards;
+      opacity: 0;
+    }
+    </style>
+    <style>
+    /* Keyframes untuk animasi tidak perlu diubah */
+    @keyframes slideInFromLeft { 0% { transform: translateX(-100%); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+    @keyframes slideInFromRight { 0% { transform: translateX(100%); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
     
     /* Keyframes BARU untuk animasi fade-in */
     @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
@@ -80,6 +103,8 @@ st.markdown(
 
 if 'analysis_results' not in st.session_state:
     st.session_state.analysis_results = None
+
+st.markdown('<div class="main-content-fade-in">', unsafe_allow_html=True)
 
 # --- BAGIAN 1: PROOFREAD ---
 st.markdown("<a id='bagian1'></a>", unsafe_allow_html=True)
@@ -704,3 +729,4 @@ if 'recommendations' in st.session_state and st.session_state.recommendations is
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+st.markdown('</div>', unsafe_allow_html=True)
