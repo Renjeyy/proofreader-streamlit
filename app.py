@@ -704,3 +704,5 @@ if 'recommendations' in st.session_state and st.session_state.recommendations is
                 use_container_width=True
             )
 st.markdown('</div>', unsafe_allow_html=True)
+
+st.divider()
