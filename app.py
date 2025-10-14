@@ -639,7 +639,7 @@ def get_structural_recommendations(full_text):
         import json
         return json.loads(cleaned_response)
     except Exception as e:
-        st.error(f"Gagal memproses respons dari AI: {e}")
+        st.error(f"Failed to Generate Response from AI: {e}")
         return []
 
 def create_recommendation_highlight_docx(file_bytes, recommendations):
