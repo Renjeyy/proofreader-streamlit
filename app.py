@@ -706,3 +706,4 @@ if 'recommendations' in st.session_state and st.session_state.recommendations is
 st.markdown('</div>', unsafe_allow_html=True)
 
 st.divider()
+st.markdown('### Duplicate For Demo <b style="color:red;">(Only For Demo / Uji Coba)</b>', unsafe_allow_html=True)
