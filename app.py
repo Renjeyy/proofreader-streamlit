@@ -47,7 +47,7 @@ st.markdown(
     
     /* Pengaturan untuk kotak peringatan */
     .fade-in-box {
-      animation: fadeIn 1s ease-in 2.2s forwards; /* Muncul setelah 2.2 detik (setelah sliding selesai) */
+      animation: fadeIn 1s ease-in 2s forwards; /* Muncul setelah 2.2 detik (setelah sliding selesai) */
       opacity: 0; /* Mulai dengan transparan */
     }
     
@@ -346,7 +346,6 @@ if st.session_state.analysis_results is not None:
                     use_container_width=True
                 )
     st.warning("Harap lakukan analisis ulang jika muncul pesan bahwa tidak ada ejaan yang salah karena model bisa saja tidak berhasil mendeteksi.")
-
 
 st.divider()
 st.markdown("<a id='bagian2'></a>", unsafe_allow_html=True)
