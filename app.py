@@ -152,6 +152,7 @@ def proofread_with_gemini(text_to_check):
     16. Kalau ada kata dalam bahasa inggris yang masih masuk akal dan nyambung dengan kalimat yang dibahas, tidak perlu Anda sarankan untuk ganti ke bahasa indonesia
     17. Jika ada bahasa inggris dan akronimnya seperti "General Ledger (GL)", tolong dilakukan italic pada kata tersebut pada saat download file hasil revisinya, akronimnya tidak perlu diitalic
     18. Awal kalimat selalu dimulai dengan huruf kapital. Jika akhir poin diberi tanda ";", maka poin selanjutnya tidak perlu kapital
+    19. Di file hasil revisi, Anda jangan ganti dari yang aslinya. Misalnya kalau ada kata yang diitalic di file asli, jangan Anda hilangkan italicnya
     
     PENTING: Berikan hasil dalam format yang SANGAT KETAT. Untuk setiap kesalahan, gunakan format:
     [SALAH] kata atau frasa yang salah -> [BENAR] kata atau frasa perbaikan -> [KALIMAT] kalimat lengkap asli tempat kesalahan ditemukan
