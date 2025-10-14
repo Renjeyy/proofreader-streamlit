@@ -532,11 +532,11 @@ def analyze_document_coherence(full_text):
     
     Untuk setiap ketidaksesuaian yang Anda temukan, lakukan hal berikut:
     1. Bacalah mengenai judul dari section atau subsection yang ada pada file tersebut
-    2. Tentukan topik utama dari paragraf atau bagian tempat kalimat itu berada pada setiap section / subsection.
-    3. Identifikasi kalimat asli yang menyimpang dari topik tersebut yang telah Anda temukan pada section / subsection tersebut.
+    2. Tentukan topik utama dari setiap section / subsection terutama isi paragrafnya.
+    3. Identifikasi kalimat asli yang menyimpang dari topik tersebut dari yang telah Anda temukan pada section / subsection tersebut.
     4. Bila ada kalimat yang sekiranya memyimpang, Berikan saran dengan menghighlight kalimat tersebut untuk diulis ulang kalimat (rewording) tersebut agar relevan dan menyatu kembali dengan topik utamanya, sambil berusaha mempertahankan maksud aslinya jika memungkinkan.
     5. Kalau ada kata yang merupakan bahasa inggris, biarkan saja dan tidak perlu ditranslate ke bahasa indonesia, Anda cukup highlight kata tersebut
-    6. Kalau ada kata yang tidak baku sesuai dengan standar KBBI, harap Anda perbaiki juga sehingga kata tersebut baku sesuai KBBI
+    6. Kalau ada kata yang tidak baku sesuai dengan standar KBBI, harap Anda perbaiki juga sehingga kata tersebut baku sesuai standar KBBI
 
     Berikan hasil dalam format yang SANGAT KETAT seperti di bawah ini. Ulangi format ini untuk setiap kalimat menyimpang yang Anda temukan:
     [TOPIK UTAMA] topik utama dari bagian tersebut -> [TEKS ASLI] kalimat asli yang tidak koheren -> [SARAN REVISI] versi kalimat yang sudah diperbaiki agar koheren
@@ -608,15 +608,14 @@ def get_structural_recommendations(full_text):
     Anda adalah seorang auditor ahli yang bertugas untuk melakukan analisis terhadap dokumen. Tugas Anda adalah menganalisis draf dokumen berikut untuk menemukan paragraf yang "tersesat" (tidak sesuai dengan topik utama sub-babnya).
 
     Untuk setiap paragraf yang tersesat, Anda harus:
-    1.  Bacalah semua dokumennya terlebih dahulu sebelum Anda membuat revisi
-    2.  Pada saat Anda baca dokumennya, tolong Identifikasi teks lengkap dari paragraf yang tidak pada tempatnya.
-    3.  Tentukan di bab atau sub-bab mana paragraf itu berada saat ini (lokasi asli).
-    4.  Berikan rekomendasi di bab atau sub-bab mana paragraf tersebut seharusnya diletakkan agar lebih koheren dan masuk akal.
-    5.  Kalau ada bagian yang harus dipindahkan ke Ringkasan Eksekutif, itu tidak perlu dimasukkan ke dalam tabel.
-    6.  Kalau ada kata yang merupakan bahasa inggris, biarkan saja dan tidak perlu ditranslate ke bahasa indonesia, Anda cukup highlight kata tersebut
-    7.  Kalau ada kata yang tidak baku sesuai dengan standar KBBI, harap Anda perbaiki juga sehingga kata tersebut baku sesuai KBBI
-    8.  Kalau ada yang tertulis "barang dan jasa", harap revisi jadi "barang dan/atau jasa"
-    9.  Pada bagian lampiran, tidak perlu dikasih usulan untuk dipindahkan kemana karena itu sudah fix disitu
+    1.  Bacalah semua dokumennya terlebih dahulu sebelum Anda membuat menganalisis dan merevisi
+    2.  Pada saat Anda baca dokumennya, tolong Identifikasi teks lengkap dari paragraf yang berada tidak pada tempatnya.
+    3.  Tentukan di bab atau sub-bab mana paragraf itu berada saat ini (lokasi asli).
+    4.  Berikan rekomendasi di bab atau sub-bab mana paragraf tersebut seharusnya diletakkan agar lebih koheren dan masuk akal.
+    5.  Kalau ada bagian yang harus dipindahkan ke Ringkasan Eksekutif, itu tidak perlu dimasukkan ke dalam tabel.
+    6.  Kalau ada kata yang merupakan bahasa inggris, biarkan saja dan tidak perlu ditranslate ke bahasa indonesia, Anda cukup highlight kata tersebut
+    7.  Kalau ada kata yang tidak baku sesuai dengan standar KBBI, harap Anda perbaiki juga sehingga kata tersebut baku sesuai KBBI
+    8.  Pada bagian lampiran, tidak perlu dikasih usulan untuk dipindahkan ke bagian lainnya karena itu sudah fix disitu
 
     Berikan hasil dalam format JSON yang berisi sebuah list. Setiap objek harus memiliki tiga kunci: "misplaced_paragraph", "original_section", dan "recommended_section".
 
