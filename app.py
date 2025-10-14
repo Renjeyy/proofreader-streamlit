@@ -133,32 +133,26 @@ def proofread_with_gemini(text_to_check):
         return []
     
     prompt = f"""
-    Anda adalah seorang auditor dan ahli bahasa Indonesia yang sangat teliti.
-    Tugas Anda adalah melakukan proofread pada teks berikut. Fokus pada:
-    1. Memperbaiki kesalahan ketik (typo).
-    2. Memastikan semua kata sesuai dengan Kamus Besar Bahasa Indonesia (KBBI).
-    3. Memperbaiki kesalahan tata bahasa sederhana dan ejaan agar sesuai dengan Pedoman Umum Ejaan Bahasa Indonesia (PUEBI).
-    4. Jika ada yang bahasa inggris, tolong di italic dan gak usah diganti menjadi bahasa indonesia, yang penting italic aja
-    5. Nama-nama yang diberi ini pastikan benar juga "Yullyan, I Made Suandi Putra, Laila Fajriani, Hari Sundoro, Bakhas Nasrani Diso, Rizky Ananda Putra, Wirawan Arief Nugroho, Lelya Novita Kusumawati, Ryani Ariesti Syafitri, Darmo Saputro Wibowo, Lucky Parwitasari, Handarudigdaya Jalanidhi Kuncaratrah, Fajar Setianto, Jaka Tirtana Hanafiah,  Muhammad Rosyid Ridho Muttaqien, Octovian Abrianto, Deny Sjahbani, Jihan Abigail, Winda Anggraini, Fadian Dwiantara, Aliya Anindhita Rachman"
-    6. Fontnya arial dan jangan diganti. Khusus untuk judul paling atas, itu font sizenya 12 dan bodynya selalu 11
-    7. Khusus "Indonesia Financial Group (IFG)", meskipun bahasa inggris, tidak perlu di italic
-    8. Bila ada bahasa yang lebih bagus, tolong berikan saran dan diberi warna highlight yang berbeda selain kuning
-    9. Pada bagian penutup, yang mulai dari "Jakarta, 4 September 2025" hingga "Kepala Divisi Satuan Kerja Audit Internal", tidak perlu dicek
-    10. Pada bagian nomor surat, itu juga tidak perlu di cek
-    11. Kalau ada kata-kata yang tidak sesuai KBBI dan PUEBI, tolong jangan highlight semua kalimatnya, tapi cukup highlight kata-kata yang salah serta perbaiki kata-kata itu aja, jangan perbaiki semua kalimatnya
-    12. Ketika Anda perbaiki, fontnya pastikan Arial dengan ukuran 11 juga
-    13. Kalau ada kata-kata dalam bahasa inggris, tolong jangan Anda sarankan untuk ganti ke bahasa indonesia, cukup Anda sarankan untuk italic
-    14. Pada kalimat "Indonesia Financial Group", jika terdapat kata typo "Finansial", tolong Anda sarankan untuk ganti ke "Financial"
-    15. Yang benar adalah "Satuan Kerja Audit Internal", bukan "Satuan Pengendali Internal Audit"
-    16. Jika terdapat kata "reviu", biarkan itu sebagai benar
-    17. Kalau ada kata "IM", "ST", "SKAI", "IFG", "TV (Angka Romawi)", "RKAT", dan "RKAP", itu tidak perlu ditandai sebagai salah dan tidak perlu disarankan untuk italic / bold / underline
-    18. Kalau ada kata "email", biarkan itu sebagai benar tapi disarankan italic saja
-    19. Untuk nama modul seperti "Modul Sourcing, dll", itu tidak perlu italic
-    20. Kalau ada kata dalam bahasa inggris yang masih masuk akal dan nyambung dengan kalimat yang dibahas, tidak perlu Anda sarankan untuk ganti ke bahasa indonesia
-    21. Jika ada bahasa inggris dan akronimnya seperti "General Ledger (GL)", tolong dilakukan italic pada kata tersebut pada saat download file hasil revisinya, akronimnya tidak usah\
-    22. Awal kalimat selalu dimulai dengan huruf kapital. Jika akhir poin diberi tanda ";", maka poin selanjutnya tidak perlu kapital
-    23. Jika terjadi ketidak-konsistenan seperti di halaman-halaman awal ada "barang dan/atau jasa" tapi dibawah-bawahnya cuma "barang dan jasa". Tolong juga dihighlight, begitupun juga untuk yang lain
-
+    Anda adalah seorang auditor dan ahli bahasa Indonesia yang sangat teliti. Anda diberikan dokumen dan tugas Anda adalah melakukan proofread pada teks berikut. Fokus pada:
+    1. Memperbaiki kesalahan ketik (typo) agar semuanya sesuai dengan standar KBBI dan PUEBI.
+    1. Kalau ada kata-kata yang tidak sesuai KBBI dan PUEBI, tolong jangan highlight semua kalimatnya, tapi cukup highlight kata-kata yang salah serta perbaiki kata-kata itu aja, jangan perbaiki semua kalimatnya
+    3. Jika ada yang bahasa inggris, tolong di italic dan tidak usah diganti menjadi bahasa indonesia, yang penting italic aja
+    4. Nama-nama yang diberi ini pastikan benar juga "Yullyan, I Made Suandi Putra, Laila Fajriani, Hari Sundoro, Bakhas Nasrani Diso, Rizky Ananda Putra, Wirawan Arief Nugroho, Lelya Novita Kusumawati, Ryani Ariesti Syafitri, Darmo Saputro Wibowo, Lucky Parwitasari, Handarudigdaya Jalanidhi Kuncaratrah, Fajar Setianto, Jaka Tirtana Hanafiah,  Muhammad Rosyid Ridho Muttaqien, Octovian Abrianto, Deny Sjahbani, Jihan Abigail, Winda Anggraini, Fadian Dwiantara, Aliya Anindhita Rachman"
+    5. Fontnya arial dan jangan diganti. Khusus untuk judul paling atas, itu font sizenya 12 dan bodynya selalu 11
+    6. Khusus "Indonesia Financial Group (IFG)", meskipun bahasa inggris, tidak perlu di italic
+    7. Kalau ada kata yang sudah diberikan akronimnya di awal, maka di halaman berikut-berikutnya cukup akronimnya saja, tidak perlu ditulis lengkap lagi
+    8. Pada bagian Nomor surat dan Penutup tidak perlu dicek, biarkan seperti itu
+    9. Ketika Anda perbaiki, fontnya pastikan Arial dengan ukuran 11 juga (Tidak diganti)
+    10. Pada kalimat "Indonesia Financial Group", jika terdapat kata typo "Finansial", tolong Anda sarankan untuk ganti ke "Financial"
+    11. Yang benar adalah "Satuan Kerja Audit Internal", bukan "Satuan Pengendali Internal Audit"
+    12. Jika terdapat kata "reviu", biarkan itu sebagai benar
+    13. Kalau ada kata "IM", "ST", "SKAI", "IFG", "TV (Angka Romawi)", "RKAT", dan "RKAP", itu tidak perlu ditandai sebagai salah dan tidak perlu disarankan untuk italic / bold / underline
+    14. Kalau ada kata "email", biarkan itu sebagai benar tapi disarankan italic saja
+    15. Untuk nama modul seperti "Modul Sourcing, dll", itu tidak perlu italic
+    16. Kalau ada kata dalam bahasa inggris yang masih masuk akal dan nyambung dengan kalimat yang dibahas, tidak perlu Anda sarankan untuk ganti ke bahasa indonesia
+    17. Jika ada bahasa inggris dan akronimnya seperti "General Ledger (GL)", tolong dilakukan italic pada kata tersebut pada saat download file hasil revisinya, akronimnya tidak perlu diitalic
+    18. Awal kalimat selalu dimulai dengan huruf kapital. Jika akhir poin diberi tanda ";", maka poin selanjutnya tidak perlu kapital
+    
     PENTING: Berikan hasil dalam format yang SANGAT KETAT. Untuk setiap kesalahan, gunakan format:
     [SALAH] kata atau frasa yang salah -> [BENAR] kata atau frasa perbaikan -> [KALIMAT] kalimat lengkap asli tempat kesalahan ditemukan
 
