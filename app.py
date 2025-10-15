@@ -707,3 +707,32 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 st.divider()
 st.markdown('### Duplicate For Demo <b style="color:red;">(Training Purposes Only)</b>', unsafe_allow_html=True)
+
+def extract_text_with_pages(uploaded_file):
+    """Mengekstrak teks dari file PDF atau DOCX."""
+    pages_content = []
+    file_extension = uploaded_file.name.split('.')[-1].lower()
+    file_bytes = uploaded_file.getvalue()
+
+    if file_extension == 'pdf':
+        try:
+            pdf_document = fitz.open(stream=file_bytes, filetype="pdf")
+            for page_num, page in enumerate(pdf_document):
+                pages_content.append({"halaman": page_num + 1, "teks": page.get_text()})
+            pdf_document.close()
+        except Exception as e:
+            st.error(f"Gagal membaca file PDF: {e}")
+            return None
+    elif file_extension == 'docx':
+        try:
+            doc = docx.Document(io.BytesIO(file_bytes))
+            full_text = "\n".join([para.text for para in doc.paragraphs])
+            pages_content.append({"halaman": 1, "teks": full_text})
+        except Exception as e:
+            st.error(f"Gagal membaca file DOCX: {e}")
+            return None
+    else:
+        st.error("Format file tidak didukung. Harap unggah .pdf atau .docx")
+        return None
+    return pages_content
+
