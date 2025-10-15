@@ -147,13 +147,12 @@ def proofread_with_gemini(text_to_check):
     11. Yang benar adalah "Satuan Kerja Audit Internal", bukan "Satuan Pengendali Internal Audit"
     12. Jika terdapat kata "reviu", biarkan itu sebagai benar
     13. Kalau ada kata "IM", "ST", "SKAI", "IFG", "TV (Angka Romawi)", "RKAT", dan "RKAP", itu tidak perlu ditandai sebagai salah dan tidak perlu disarankan untuk italic / bold / underline
-    14. Kalau ada kata "email", biarkan itu sebagai benar tapi disarankan italic saja
-    15. Untuk nama modul seperti "Modul Sourcing, dll", itu tidak perlu italic
-    16. Kalau ada kata dalam bahasa inggris yang masih masuk akal dan nyambung dengan kalimat yang dibahas, tidak perlu Anda sarankan untuk ganti ke bahasa indonesia
-    17. Jika ada bahasa inggris dan akronimnya seperti "General Ledger (GL)", tolong dilakukan italic pada kata tersebut pada saat download file hasil revisinya, akronimnya tidak perlu diitalic
-    18. Awal kalimat selalu dimulai dengan huruf kapital. Jika akhir poin diberi tanda ";", maka poin selanjutnya tidak perlu kapital
-    19. Di file hasil revisi, Anda jangan ganti dari yang aslinya. Misalnya kalau ada kata yang diitalic di file asli, jangan Anda hilangkan italicnya
-    
+    14. Untuk nama modul seperti "Modul Sourcing, dll", itu tidak perlu italic
+    15. Kalau ada kata dalam bahasa inggris yang masih masuk akal dan nyambung dengan kalimat yang dibahas, tidak perlu Anda sarankan untuk ganti ke bahasa indonesia
+    16. Jika ada bahasa inggris dan akronimnya seperti "General Ledger (GL)", tolong dilakukan italic pada kata tersebut pada saat download file hasil revisinya, akronimnya tidak perlu diitalic
+    17. Awal kalimat selalu dimulai dengan huruf kapital. Jika akhir poin diberi tanda ";", maka poin selanjutnya tidak perlu kapital
+    18. Di file hasil revisi, Anda jangan ganti dari yang aslinya. Misalnya kalau ada kata yang diitalic di file asli, jangan Anda hilangkan italicnya
+
     PENTING: Berikan hasil dalam format yang SANGAT KETAT. Untuk setiap kesalahan, gunakan format:
     [SALAH] kata atau frasa yang salah -> [BENAR] kata atau frasa perbaikan -> [KALIMAT] kalimat lengkap asli tempat kesalahan ditemukan
 
@@ -367,25 +366,6 @@ def extract_paragraphs(docx_file):
     except Exception as e:
         st.error(f"Gagal membaca file {docx_file.name}: {e}")
         return []
-
-def get_revision_confidence(original_sentence, revised_sentence):
-    """Meminta model AI untuk memberikan skor keyakinan bahwa revisi lebih baik."""
-    if original_sentence == revised_sentence:
-        return 100
-    prompt = f"""
-    Bandingkan dua kalimat ini berdasarkan PUEBI dan KBBI (Pastikan Anda review PUEBI dan KBBI terlebih dahulu sebelum bandingkan).
-    Kalimat Asli: "{original_sentence}"
-    Kalimat Revisi: "{revised_sentence}"
-
-    Beri skor keyakinan (angka 0-100) bahwa revisi tersebut adalah perbaikan yang benar dan diperlukan.
-    PENTING: Jawab HANYA dengan ANGKA.
-    """
-    try:
-        response = model.generate_content(prompt)
-        confidence_str = ''.join(filter(str.isdigit, response.text))
-        return int(confidence_str) if confidence_str else "N/A"
-    except Exception:
-        return "N/A"
 
 def find_word_diff(original_para, revised_para):
     """Menemukan dan menyorot kata-kata yang berbeda antara dua paragraf."""
