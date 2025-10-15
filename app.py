@@ -89,7 +89,7 @@ st.markdown('### 1. Proofread Dokumen <b style="color:green;">(Available)</b>', 
 try:
     api_key = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-2.0-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash-001')
 except KeyError:
     st.error("Google API Key belum diatur. Harap atur di Streamlit Secrets.")
     st.stop()
